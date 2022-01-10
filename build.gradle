@@ -3,6 +3,7 @@ import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
 plugins {
 	id "java"
 	id "edu.wpi.first.GradleRIO" version "2022.1.1"
+	id "org.sonarqube" version "3.3"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -96,3 +97,17 @@ test {
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
+
+sonarqube {
+	properties {
+		property "sonar.projectKey", "momentumfrc_2022RapidReact"
+		property "sonar.organization", "momentumfrc"
+		property "sonar.host.url", "https://sonarcloud.io"
+
+		property "sonar.projectName", "2022RapidReact"
+		property "sonar.links.homepage", "https://github.com/momentumfrc/2022RapidReact"
+		property "sonar.links.ci", "https://github.com/momentumfrc/2022RapidReact/actions"
+		property "sonar.links.scm", "https://github.com/momentumfrc/2022RapidReact"
+		property "sonar.links.issue", "https://github.com/momentumfrc/2022RapidReact/issues"
+	}
+}
