@@ -14,12 +14,12 @@ import org.junit.jupiter.api.Test;
  * Test class that does nothing
  */
 public class ExampleTest {
-    private static final Logger LOG = Logger.getLogger("4999 Rapid React/Test");
+	private static final Logger LOG = Logger.getLogger("4999 Rapid React/Test");
 
-    @Test
-    public void test() {
-        LOG.info("Beginning Tests");
+	@Test
+	public void test() {
+		LOG.info("Beginning Tests");
 
-        assertEquals(2 + 2, 4);
-    }
+		assertEquals(2 + 2, 4);
+	}
 }
