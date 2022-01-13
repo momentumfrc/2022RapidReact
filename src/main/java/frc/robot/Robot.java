@@ -59,7 +59,7 @@ public class Robot extends TimedRobot {
 
 		// schedule the autonomous command (example)
 		if (this.autonomous != null) {
-		this.autonomous.schedule();
+			this.autonomous.schedule();
 		}
 	}
 
@@ -74,7 +74,7 @@ public class Robot extends TimedRobot {
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
 		if (this.autonomous != null) {
-		this.autonomous.cancel();
+			this.autonomous.cancel();
 		}
 	}
 
