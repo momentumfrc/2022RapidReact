@@ -1,6 +1,5 @@
 package com.momentum4999.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.momentum4999.robot.RobotConfig;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.InputDevice.InputAxis;
@@ -10,13 +9,14 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-	private final MotorController leftFront = new WPI_TalonFX(Components.DR_LEFT_FRONT);
-	private final MotorController leftRear = new WPI_TalonFX(Components.DR_LEFT_REAR);
-	private final MotorController rightFront = new WPI_TalonFX(Components.DR_RIGHT_FRONT);
-	private final MotorController rightRear = new WPI_TalonFX(Components.DR_RIGHT_REAR);
+	private final MotorController leftFront = new VictorSP(Components.DR_LEFT_FRONT);
+	private final MotorController leftRear = new VictorSP(Components.DR_LEFT_REAR);
+	private final MotorController rightFront = new VictorSP(Components.DR_RIGHT_FRONT);
+	private final MotorController rightRear = new VictorSP(Components.DR_RIGHT_REAR);
 
 	private final Encoder leftDriveEncoder = new Encoder(
 		Components.DR_LEFT_FRONT, Components.DR_LEFT_REAR, true);
