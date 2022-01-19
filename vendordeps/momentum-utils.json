@@ -1,0 +1,19 @@
+{
+    "fileName": "momentum-utils.json",
+    "name": "Momentum_Utils",
+    "version": "2.0",
+    "uuid": "5a969875-fdb4-47ea-82b5-36a8ad1a1877",
+    "mavenUrls": [
+        "https://raw.githubusercontent.com/momentumfrc/Momentum-Tools/master/mvn-repo"
+    ],
+    "jsonUrl": "https://raw.githubusercontent.com/momentumfrc/Momentum-Tools/master/json/momentum-utils.json",
+    "javaDependencies": [
+        {
+            "groupId": "org.usfirst.frc.team4999",
+            "artifactId": "momentum-utils",
+            "version": "2.0"
+        }
+    ],
+    "jniDependencies": [],
+    "cppDependencies": []
+}

@@ -4,11 +4,21 @@
 
 package com.momentum4999.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ExampleCommand;
+import com.momentum4999.robot.input.InputDevice;
+import com.momentum4999.robot.input.MoSingleGamepad;
+import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.ExampleSubsystem;
+import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
+import com.momentum4999.robot.util.Components;
+
+import org.usfirst.frc.team4999.controllers.LogitechF310;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /**
@@ -21,9 +31,15 @@ import edu.wpi.first.wpilibj2.command.Command;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-	// The robot's subsystems and commands are defined here...
-	private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
-	private final ExampleCommand autoCommand = new ExampleCommand(this.exampleSubsystem);
+	// Components
+	private final InputDevice inputDevice = createInputDevice();
+
+	// Subsystems
+	private final DriveSubsystem driveSubsystem = new DriveSubsystem();
+
+	// Commands
+	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.inputDevice);
+	private final ExampleCommand autoCommand = new ExampleCommand();
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -52,5 +68,14 @@ public class RobotContainer {
 	public Command getAutonomousCommand() {
 		// An ExampleCommand will run in autonomous
 		return this.autoCommand;
+	}
+
+	public Command getCurrentTeleopCommand() {
+		// TODO: Change this
+		return this.driveCommand;
+	}
+
+	public static InputDevice createInputDevice() {
+		return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
 	}
 }

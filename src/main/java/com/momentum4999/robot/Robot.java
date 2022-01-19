@@ -76,6 +76,7 @@ public class Robot extends TimedRobot {
 		if (this.autonomous != null) {
 			this.autonomous.cancel();
 		}
+		this.robotContainer.getCurrentTeleopCommand().schedule();
 	}
 
 	/** This function is called periodically during operator control. */
