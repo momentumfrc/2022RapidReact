@@ -2,10 +2,10 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package com.momentum4999;
+package com.momentum4999.robot;
 
-import com.momentum4999.commands.ExampleCommand;
-import com.momentum4999.subsystems.ExampleSubsystem;
+import com.momentum4999.robot.commands.ExampleCommand;
+import com.momentum4999.robot.subsystems.ExampleSubsystem;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
