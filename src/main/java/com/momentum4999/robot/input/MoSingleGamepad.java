@@ -10,12 +10,12 @@ public class MoSingleGamepad extends InputDevice {
 	}
 
 	@Override
-	public double axisStatusInternal(int axis) {
-		return gamepad.getRawAxis(axis);
+	public double axisStatusInternal(InputAxis axis) {
+		return gamepad.getRawAxis(axis.id);
 	}
 
 	@Override
-	protected boolean buttonStatusInternal(int button) {
-		return gamepad.getRawButton(button);
+	protected boolean buttonStatusInternal(InputButton button) {
+		return gamepad.getRawButton(button.id);
 	}
 }
