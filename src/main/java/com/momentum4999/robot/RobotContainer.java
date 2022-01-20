@@ -7,6 +7,7 @@ package com.momentum4999.robot;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ExampleCommand;
 import com.momentum4999.robot.input.InputDevice;
+import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
@@ -73,6 +74,12 @@ public class RobotContainer {
 	}
 
 	public static InputDevice createInputDevice() {
+		/* USE FOR TWO DRIVER MODE
+		return new MoMultiGamepad(
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
+		);
+		*/
 		return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
 	}
 }

@@ -38,7 +38,11 @@ public class MoMultiGamepad extends InputDevice {
 		return false;
 	}
 
-	public class Entry {
+	public static Entry entry(GenericHID controller) {
+		return new Entry(controller);
+	}
+
+	public static class Entry {
 		public final GenericHID controller;
 		private Predicate<InputButton> buttonFilter = b -> true;
 		private Predicate<InputAxis> axisFilter = a -> true;
