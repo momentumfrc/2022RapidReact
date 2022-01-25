@@ -9,7 +9,9 @@ import com.momentum4999.robot.commands.ExampleCommand;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.MoSingleGamepad;
+import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
+import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
 
@@ -18,6 +20,8 @@ import org.usfirst.frc.team4999.controllers.LogitechF310;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -30,50 +34,52 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer {
 	// Components
-	private final InputDevice inputDevice = createInputDevice();
+	private final InputDevice gamepad = createGamepad();
+
+	// Joystick Buttons
+	private final JoystickButton intakeFwd = gamepad.getJoystickButton(InputButton.LB);
+	private final JoystickButton intakeRev = gamepad.getJoystickButton(InputButton.RB);
+	private final JoystickButton intakeToggle = gamepad.getJoystickButton(InputButton.B);
 
 	// Subsystems
 	private final DriveSubsystem driveSubsystem = new DriveSubsystem();
+	private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
 	// Commands
-	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.inputDevice);
+	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
 	private final ExampleCommand autoCommand = new ExampleCommand();
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
 	 */
 	public RobotContainer() {
-		// Configure the button bindings
 		configureButtonBindings();
 	}
 
 	/**
-	 * Use this method to define your button->command mappings. Buttons can be
-	 * created by
-	 * instantiating a {@link GenericHID} or one of its subclasses ({@link
-	 * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
-	 * it to a {@link
-	 * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+	 * Used to define button->command mappings.
 	 */
 	private void configureButtonBindings() {
+		// ---------------------------------- Intake ----------------------------------
+		this.intakeFwd.whenHeld(new RunCommand(() -> this.intakeSubsystem.runIntake(false)));
+		this.intakeRev.whenHeld(new RunCommand(() -> this.intakeSubsystem.runIntake(true)));
+		this.intakeToggle.whenPressed(new RunCommand(this.intakeSubsystem::toggleIntakeExtension));
 	}
 
 	/**
-	 * Use this to pass the autonomous command to the main {@link Robot} class.
+	 * Used to pass the autonomous command to the main {@link Robot} class.
 	 *
 	 * @return the command to run in autonomous
 	 */
 	public Command getAutonomousCommand() {
-		// An ExampleCommand will run in autonomous
 		return this.autoCommand;
 	}
 
-	public Command getCurrentTeleopCommand() {
-		// TODO: Change this
+	public Command getRunningTeleopCommand() {
 		return this.driveCommand;
 	}
 
-	public static InputDevice createInputDevice() {
+	public static InputDevice createGamepad() {
 		/* USE FOR TWO DRIVER MODE
 		return new MoMultiGamepad(
 			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),

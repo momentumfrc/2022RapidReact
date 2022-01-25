@@ -2,10 +2,14 @@ package com.momentum4999.robot.input;
 
 import org.usfirst.frc.team4999.utils.Utils;
 
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 public abstract class InputDevice {
 	public abstract double axisStatusInternal(InputAxis axis);
 
 	protected abstract boolean buttonStatusInternal(InputButton button);
+
+	public abstract JoystickButton getJoystickButton(InputButton button);
 
 	public final boolean getButton(InputButton button) {
 		return this.buttonStatusInternal(button);
@@ -18,7 +22,7 @@ public abstract class InputDevice {
 	public enum InputButton {
 		X(3), Y(4), A(1), B(2), LB(5), 
 		RB(6), START(8), BACK(7);
-		
+
 		public final int id;
 
 		InputButton(int id) {

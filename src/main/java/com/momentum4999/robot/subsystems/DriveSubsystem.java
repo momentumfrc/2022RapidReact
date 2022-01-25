@@ -13,26 +13,20 @@ import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-	private final MotorController leftFront = new VictorSP(Components.DR_LEFT_FRONT);
-	private final MotorController leftRear = new VictorSP(Components.DR_LEFT_REAR);
-	private final MotorController rightFront = new VictorSP(Components.DR_RIGHT_FRONT);
-	private final MotorController rightRear = new VictorSP(Components.DR_RIGHT_REAR);
+	private final MotorController left = new VictorSP(Components.DR_LEFT);
+	private final MotorController right = new VictorSP(Components.DR_RIGHT);
+	private final Encoder driveEncoder = new Encoder(
+		Components.DR_LEFT, Components.DR_RIGHT, true);
 
-	private final Encoder leftDriveEncoder = new Encoder(
-		Components.DR_LEFT_FRONT, Components.DR_LEFT_REAR, true);
-	private final Encoder rightDriveEncoder = new Encoder(
-		Components.DR_RIGHT_FRONT, Components.DR_RIGHT_REAR, false);
-
-	private final MotorControllerGroup leftDriveGroup = new MotorControllerGroup(leftFront, leftRear);
-	private final MotorControllerGroup rightDriveGroup = new MotorControllerGroup(rightFront, rightRear);
+	private final MotorControllerGroup leftDriveGroup = new MotorControllerGroup(left);
+	private final MotorControllerGroup rightDriveGroup = new MotorControllerGroup(right);
 
 	private final DifferentialDrive driveTrain = new DifferentialDrive(leftDriveGroup, rightDriveGroup);
 
 	public DriveSubsystem() {
 		this.driveTrain.setDeadband(0);
 
-		this.leftDriveEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
-    	this.rightDriveEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
+		this.driveEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
 
 		// TODO: PID
 	}

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class MoMultiGamepad extends InputDevice {
 	private final List<Entry> gamepads;
@@ -20,7 +21,7 @@ public class MoMultiGamepad extends InputDevice {
 	public double axisStatusInternal(InputAxis axis) {
 		for (Entry e : gamepads) {
 			if (e.axisFilter.test(axis)) {
-				return e.controller.getRawAxis(axis.id);
+				return e.gamepad.getRawAxis(axis.id);
 			}
 		}
 
@@ -31,11 +32,22 @@ public class MoMultiGamepad extends InputDevice {
 	protected boolean buttonStatusInternal(InputButton button) {
 		for (Entry e : gamepads) {
 			if (e.buttonFilter.test(button)) {
-				return e.controller.getRawButton(button.id);
+				return e.gamepad.getRawButton(button.id);
 			}
 		}
 
 		return false;
+	}
+
+	@Override
+	public JoystickButton getJoystickButton(InputButton button) {
+		for (Entry e : gamepads) {
+			if (e.buttonFilter.test(button)) {
+				return new JoystickButton(e.gamepad, button.id);
+			}
+		}
+
+		return null;
 	}
 
 	public static Entry entry(GenericHID controller) {
@@ -43,12 +55,12 @@ public class MoMultiGamepad extends InputDevice {
 	}
 
 	public static class Entry {
-		public final GenericHID controller;
+		public final GenericHID gamepad;
 		private Predicate<InputButton> buttonFilter = b -> true;
 		private Predicate<InputAxis> axisFilter = a -> true;
 
-		public Entry(GenericHID controller) {
-			this.controller = controller;
+		public Entry(GenericHID gamepad) {
+			this.gamepad = gamepad;
 		}
 
 		public Entry denyButtons(InputButton ... buttons) {
