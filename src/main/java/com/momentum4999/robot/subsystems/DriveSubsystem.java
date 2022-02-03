@@ -28,6 +28,8 @@ public class DriveSubsystem extends SubsystemBase {
 
 		this.driveEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
 
+		this.left.setInverted(true);
+
 		// TODO: PID
 	}
 

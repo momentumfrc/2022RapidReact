@@ -7,7 +7,6 @@ package com.momentum4999.robot;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ExampleCommand;
 import com.momentum4999.robot.input.InputDevice;
-import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
@@ -17,8 +16,6 @@ import com.momentum4999.robot.util.Components;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
