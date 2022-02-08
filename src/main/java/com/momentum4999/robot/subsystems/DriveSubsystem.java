@@ -37,6 +37,10 @@ public class DriveSubsystem extends SubsystemBase {
 		mode.drive(this.driveTrain, input);
 	}
 
+	public void driveDirect(double left, double right) {
+		this.driveTrain.tankDrive(left, right);
+	}
+
 	public void stop() {
 		this.driveTrain.stopMotor();
 	}

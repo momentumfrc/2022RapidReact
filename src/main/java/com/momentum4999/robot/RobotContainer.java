@@ -4,6 +4,7 @@
 
 package com.momentum4999.robot;
 
+import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ExampleCommand;
 import com.momentum4999.robot.input.InputDevice;
@@ -39,12 +40,23 @@ public class RobotContainer {
 	private final JoystickButton intakeToggle = gamepad.getJoystickButton(InputButton.B);
 
 	// Subsystems
-	private final DriveSubsystem driveSubsystem = new DriveSubsystem();
-	private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
+	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
 	// Commands
 	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
-	private final ExampleCommand autoCommand = new ExampleCommand();
+	private final AutonomousCommand autoCommand = new AutonomousCommand(this, String.join("\n",
+		"drive forward 0.5 seconds",
+		"wait 0.5 seconds",
+		"drive backward 1 second",
+		"wait 0.5 seconds",
+		"drive forward 0.5 seconds",
+		"wait 1 second",
+
+		"turn left 1 second",
+		"turn right 2 seconds",
+		"turn left 1 seconds"
+	));
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -74,6 +86,10 @@ public class RobotContainer {
 
 	public Command getRunningTeleopCommand() {
 		return this.driveCommand;
+	}
+
+	public void stopSubsystems() {
+		this.driveSubsystem.stop();
 	}
 
 	public static InputDevice createGamepad() {
