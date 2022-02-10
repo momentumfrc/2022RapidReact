@@ -44,19 +44,8 @@ public class RobotContainer {
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
 	// Commands
-	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
-	private final AutonomousCommand autoCommand = new AutonomousCommand(this, String.join("\n",
-		"drive forward 0.5 seconds",
-		"wait 0.5 seconds",
-		"drive backward 1 second",
-		"wait 0.5 seconds",
-		"drive forward 0.5 seconds",
-		"wait 1 second",
-
-		"turn left 1 second",
-		"turn right 2 seconds",
-		"turn left 1 seconds"
-	));
+	private final DriveCommand driveCommand = new DriveCommand(Mode.TANK, this.driveSubsystem, this.gamepad);
+	private final AutonomousCommand autoCommand = new AutonomousCommand(this, AutonomousCommand.readAutoMoCodeScript());
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.

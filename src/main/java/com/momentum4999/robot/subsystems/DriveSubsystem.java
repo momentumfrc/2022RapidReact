@@ -28,7 +28,7 @@ public class DriveSubsystem extends SubsystemBase {
 
 		this.driveEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
 
-		this.left.setInverted(true);
+		this.right.setInverted(true);
 
 		// TODO: PID
 	}
@@ -49,19 +49,19 @@ public class DriveSubsystem extends SubsystemBase {
 		TANK {
 			@Override protected void drive(DifferentialDrive driveTrain, InputDevice input) {
 				driveTrain.tankDrive(
-					input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RY));
+					-input.getAxis(InputAxis.LY), -input.getAxis(InputAxis.RY));
 			}
 		}, 
 		ARCADE {
 			@Override protected void drive(DifferentialDrive driveTrain, InputDevice input) {
 				driveTrain.arcadeDrive(
-					input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX));
+					-input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX));
 			}
 		}, 
 		CURVE {
 			@Override protected void drive(DifferentialDrive driveTrain, InputDevice input) {
 				driveTrain.curvatureDrive(
-					input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX), false);
+					-input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX), false);
 			}
 		};
 

@@ -1,0 +1,12 @@
+set drive power 50 percent
+
+drive forward 0.5 seconds
+wait 0.5 seconds
+drive backward 1 second
+wait 0.5 seconds
+drive forward 0.5 seconds
+wait 1 second
+
+turn left 1 second
+turn right 2 seconds
+turn left 1 seconds

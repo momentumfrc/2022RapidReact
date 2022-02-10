@@ -11,6 +11,8 @@ import java.util.function.Predicate;
 
 import com.momentum4999.robot.RobotContainer;
 
+import org.usfirst.frc.team4999.utils.Utils;
+
 /**
  * A compiler for MoCode, which can be used to write very 
  * simple robot procedures in a human readable format.
@@ -30,7 +32,8 @@ public class MoCode {
 	public static final MoCode INSTANCE = new MoCode()
 		.withStep("wait", WaitStep::new)
 		.withStep("drive", DriveStep::new)
-		.withStep("turn", TurnStep::new);
+		.withStep("turn", TurnStep::new)
+		.withStep("set", SetPowerStep::new);
 	
 	private final Map<String, Function<String[], Step>> steps = new HashMap<>();
 
@@ -55,25 +58,48 @@ public class MoCode {
 	 * @param source The MoCode source code
 	 * @return a function which runs the compiled code
 	 */
-	public Consumer<RobotContainer> compile(String source) {
+	public Consumer<MoCodeRuntime> compile(String source) {
 		String[] lines = source.split("\n");
 		
-		List<Consumer<RobotContainer>> procedures = new ArrayList<>();
+		List<Consumer<MoCodeRuntime>> procedures = new ArrayList<>();
 
 		for (String line : lines) {
 			String[] tokens = line.split("\\s");
 
-			if (tokens.length == 0) continue;
+			if (tokens.length <= 0 || tokens[0] == null) continue;
 
 			String stepType = tokens[0];
-			Step step = this.steps.get(stepType).apply(tokens);
 
-			procedures.add(step::execute);
+			if (this.steps.containsKey(stepType)) {
+				Step step = this.steps.get(stepType).apply(tokens);
+
+				procedures.add(step::execute);
+			}
 		}
 
 		return robot -> {
 			procedures.forEach(p -> p.accept(robot));
 		};
+	}
+
+	public static class MoCodeRuntime {
+		public final RobotContainer robot;
+		public double drivePower = 1;
+		public double driveLeft = 0;
+		public double driveRight = 0;
+
+		public MoCodeRuntime(RobotContainer robot) {
+			this.robot = robot;
+		}
+
+		public void setRobotDrive(double left, double right) {
+			this.driveLeft = left;
+			this.driveRight = right;
+		}
+
+		public void periodic() {
+			this.robot.driveSubsystem.driveDirect(this.driveLeft, this.driveRight);
+		}
 	}
 
 	/**
@@ -115,7 +141,7 @@ public class MoCode {
 	 * The base class for a MoCode step type
 	 */
 	public static abstract class Step {
-		public abstract void execute(RobotContainer robot);
+		public abstract void execute(MoCodeRuntime runtime);
 	}
 
 	public static class WaitStep extends Step {
@@ -133,7 +159,7 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(RobotContainer robot) {
+		public void execute(MoCodeRuntime runtime) {
 			try {
 				Thread.sleep((long)(this.waitTime * 1000));
 			} catch (InterruptedException ignored) {}
@@ -158,11 +184,14 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(RobotContainer robot) {
+		public void execute(MoCodeRuntime runtime) {
+			System.out.println("DRIVE");
 			try {
-				robot.driveSubsystem.driveDirect(this.speed, this.speed);
+				double speed = this.speed * runtime.drivePower;
+
+				runtime.setRobotDrive(speed, speed);
 				Thread.sleep((long)(this.time * 1000));
-				robot.driveSubsystem.stop();
+				runtime.setRobotDrive(0, 0);
 			} catch (InterruptedException ignored) {}
 		}
 	}
@@ -185,12 +214,34 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(RobotContainer robot) {
+		public void execute(MoCodeRuntime runtime) {
 			try {
-				robot.driveSubsystem.driveDirect(this.speed, -this.speed);
+				double speed = this.speed * runtime.drivePower;
+
+				runtime.setRobotDrive(speed, -speed);
 				Thread.sleep((long)(this.time * 1000));
-				robot.driveSubsystem.stop();
+				runtime.setRobotDrive(0, 0);
 			} catch (InterruptedException ignored) {}
+		}
+	}
+
+	public static class SetPowerStep extends Step {
+		private static final LineValidator VALIDATOR = new LineValidator()
+			.literal("drive").literal("power").number().literal("percent");
+		public final double power;
+
+		public SetPowerStep(String[] tokens) {
+			if (VALIDATOR.validate(tokens)) {
+				this.power = Utils.clip(Double.parseDouble(tokens[3]), 0, 100) * 0.01;
+			} else {
+				this.power = 0;
+				System.out.println("Invalid Line: "+String.join(" ", tokens));
+			}
+		}
+
+		@Override
+		public void execute(MoCodeRuntime runtime) {
+			runtime.drivePower = this.power;
 		}
 	}
 }

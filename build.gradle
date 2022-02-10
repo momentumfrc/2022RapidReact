@@ -89,6 +89,10 @@ jar {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+sourceSets.main.resources {
+	srcDirs = ["src/main/resources"]
+}
+
 test {
 	useJUnitPlatform()
 }
