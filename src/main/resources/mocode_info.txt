@@ -23,12 +23,38 @@ EXAMPLES:
 	"turn left 3 seconds"
 	"turn right 0.2 seconds"
 
+-- To Adjust and Run the Intake --
+INFO:
+	Toggle the intake, or run it forward/backward
+EXAMPLES: 
+	"intake toggle"
+	"roller run 1 second"
+	"roller reverse 3 seconds"
+
+-- To Run the Shooter --
+INFO:
+	Run the shooter
+EXAMPLES: 
+	"shoot 6.9 seconds"
+
 --- [ Example MoCode File (.mocod) ] ---
 
 set drive power 50 percent
 
-drive forward 1 second
-turn left 0.5 seconds
+drive forward 0.5 seconds
+wait 0.5 seconds
 drive backward 1 second
+wait 0.5 seconds
+drive forward 0.5 seconds
+wait 1 second
 
-turn right 3 seconds
+turn left 1 second
+turn right 2 seconds
+turn left 1 seconds
+
+intake toggle
+intake toggle
+
+roller run 1 second
+roller reverse 1 second
+shoot 3 seconds

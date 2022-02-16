@@ -7,11 +7,13 @@ package com.momentum4999.robot;
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ExampleCommand;
+import com.momentum4999.robot.commands.MotorTestCommand;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
+import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
 
@@ -36,12 +38,14 @@ public class RobotContainer {
 
 	// Joystick Buttons
 	private final JoystickButton intakeFwd = gamepad.getJoystickButton(InputButton.LB);
-	private final JoystickButton intakeRev = gamepad.getJoystickButton(InputButton.RB);
+	private final JoystickButton intakeRev = gamepad.getJoystickButton(InputButton.A);
 	private final JoystickButton intakeToggle = gamepad.getJoystickButton(InputButton.B);
+	private final JoystickButton shoot = gamepad.getJoystickButton(InputButton.RB);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
 	// Commands
 	private final DriveCommand driveCommand = new DriveCommand(Mode.TANK, this.driveSubsystem, this.gamepad);
@@ -59,9 +63,10 @@ public class RobotContainer {
 	 */
 	private void configureButtonBindings() {
 		// ---------------------------------- Intake ----------------------------------
-		this.intakeFwd.whenHeld(new RunCommand(() -> this.intakeSubsystem.runIntake(false)));
-		this.intakeRev.whenHeld(new RunCommand(() -> this.intakeSubsystem.runIntake(true)));
-		this.intakeToggle.whenPressed(new RunCommand(this.intakeSubsystem::toggleIntakeExtension));
+		this.intakeFwd.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem, this.shooterSubsystem));
+		this.intakeRev.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem, this.shooterSubsystem));
+		this.intakeToggle.whenPressed(new RunCommand(this.intakeSubsystem::toggleIntakeExtension, this.intakeSubsystem));
+		this.shoot.whenHeld(new RunCommand(() -> this.shooterSubsystem.shootAndIndex(), this.shooterSubsystem));
 	}
 
 	/**
@@ -79,6 +84,11 @@ public class RobotContainer {
 
 	public void stopSubsystems() {
 		this.driveSubsystem.stop();
+	}
+
+	public void runIntake(boolean rev) {
+		this.intakeSubsystem.runIntake(rev);
+		this.shooterSubsystem.indexWhileIntaking(rev);
 	}
 
 	public static InputDevice createGamepad() {

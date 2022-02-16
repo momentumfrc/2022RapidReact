@@ -1,7 +1,6 @@
 package com.momentum4999.robot.commands;
 
 import com.momentum4999.robot.input.InputDevice;
-import com.momentum4999.robot.input.InputDevice.InputAxis;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 

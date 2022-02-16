@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
-	private final MotorController intakeRoller = new VictorSP(Components.INTAKE_ROLLER);
+	public final MotorController intakeRoller = new VictorSP(Components.INTAKE_ROLLER);
 	private final DoubleSolenoid intakePiston = new DoubleSolenoid(
 		PneumaticsModuleType.CTREPCM, Components.INTAKE_PISTON_EXTEND, Components.INTAKE_PISTON_RETRACT);
 	private final MotorRamp motorRamp = new MotorRamp(0.1);

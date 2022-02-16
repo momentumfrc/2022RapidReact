@@ -33,7 +33,10 @@ public class MoCode {
 		.withStep("wait", WaitStep::new)
 		.withStep("drive", DriveStep::new)
 		.withStep("turn", TurnStep::new)
-		.withStep("set", SetPowerStep::new);
+		.withStep("set", SetPowerStep::new)
+		.withStep("intake", IntakeToggleStep::new)
+		.withStep("roller", RollerStep::new)
+		.withStep("shoot", ShootStep::new);
 	
 	private final Map<String, Function<String[], Step>> steps = new HashMap<>();
 
@@ -87,6 +90,8 @@ public class MoCode {
 		public double drivePower = 1;
 		public double driveLeft = 0;
 		public double driveRight = 0;
+		public int intaking = 0;
+		public boolean shooting;
 
 		public MoCodeRuntime(RobotContainer robot) {
 			this.robot = robot;
@@ -97,8 +102,32 @@ public class MoCode {
 			this.driveRight = right;
 		}
 
+		public void setRobotIntaking(boolean rev) {
+			this.intaking = rev ? -1 : 1;
+		}
+
+		public void stopRobotIntaking() {
+			this.intaking = 0;
+		}
+
+		public void setRobotShooting(boolean shooting) {
+			this.shooting = shooting;
+		}
+
 		public void periodic() {
 			this.robot.driveSubsystem.driveDirect(this.driveLeft, this.driveRight);
+			if (this.intaking != 0) {
+				this.robot.runIntake(this.intaking < 0);
+			} else {
+				this.robot.intakeSubsystem.idleIntake();
+				this.robot.shooterSubsystem.idleIndexer();
+			}
+			if (this.shooting) {
+				this.robot.shooterSubsystem.shootAndIndex();
+			} else {
+				this.robot.shooterSubsystem.idleShooter();
+				this.robot.shooterSubsystem.idleIndexer();
+			}
 		}
 	}
 
@@ -185,7 +214,6 @@ public class MoCode {
 
 		@Override
 		public void execute(MoCodeRuntime runtime) {
-			System.out.println("DRIVE");
 			try {
 				double speed = this.speed * runtime.drivePower;
 
@@ -242,6 +270,73 @@ public class MoCode {
 		@Override
 		public void execute(MoCodeRuntime runtime) {
 			runtime.drivePower = this.power;
+		}
+	}
+
+	public static class RollerStep extends Step {
+		private static final LineValidator VALIDATOR = new LineValidator()
+			.literal("run", "reverse").number().literal("second", "seconds");
+		public final double time;
+		public final boolean rev;
+
+		public RollerStep(String[] tokens) {
+			if (VALIDATOR.validate(tokens)) {
+				this.rev = "reverse".equals(tokens[1]);
+				this.time = Double.parseDouble(tokens[2]);
+			} else {
+				this.rev = false;
+				this.time = 0;
+				System.out.println("Invalid Line: "+String.join(" ", tokens));
+			}
+		}
+
+		@Override
+		public void execute(MoCodeRuntime runtime) {
+			try {
+				runtime.setRobotIntaking(this.rev);
+				Thread.sleep((long)(this.time * 1000));
+				runtime.stopRobotIntaking();
+			} catch (InterruptedException ignored) {}
+		}
+	}
+
+	public static class IntakeToggleStep extends Step {
+		private static final LineValidator VALIDATOR = new LineValidator()
+			.literal("toggle");
+
+		public IntakeToggleStep(String[] tokens) {
+			if (!VALIDATOR.validate(tokens)) {
+				System.out.println("Invalid Line: "+String.join(" ", tokens));
+			}
+		}
+
+		@Override
+		public void execute(MoCodeRuntime runtime) {
+			runtime.robot.intakeSubsystem.toggleIntakeExtension();
+		}
+	}
+
+	public static class ShootStep extends Step {
+		private static final LineValidator VALIDATOR = new LineValidator()
+			.number().literal("second", "seconds");
+		public final double time;
+
+		public ShootStep(String[] tokens) {
+			if (VALIDATOR.validate(tokens)) {
+				this.time = Double.parseDouble(tokens[1]);
+			} else {
+				this.time = 0;
+				System.out.println("Invalid Line: "+String.join(" ", tokens));
+			}
+		}
+
+		@Override
+		public void execute(MoCodeRuntime runtime) {
+			try {
+				runtime.setRobotShooting(true);
+				Thread.sleep((long)(this.time * 1000));
+				runtime.setRobotShooting(false);
+			} catch (InterruptedException ignored) {}
 		}
 	}
 }

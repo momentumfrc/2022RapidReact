@@ -10,3 +10,10 @@ wait 1 second
 turn left 1 second
 turn right 2 seconds
 turn left 1 seconds
+
+intake toggle
+intake toggle
+
+roller run 1 second
+roller reverse 1 second
+shoot 3 seconds
