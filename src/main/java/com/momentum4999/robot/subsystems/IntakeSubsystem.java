@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
 	public final MotorController intakeRoller = new VictorSP(Components.INTAKE_ROLLER);
-	private final DoubleSolenoid intakePiston = new DoubleSolenoid(
-		PneumaticsModuleType.CTREPCM, Components.INTAKE_PISTON_EXTEND, Components.INTAKE_PISTON_RETRACT);
+	//private final DoubleSolenoid intakePiston = new DoubleSolenoid(
+	//	PneumaticsModuleType.CTREPCM, Components.INTAKE_PISTON_EXTEND, Components.INTAKE_PISTON_RETRACT);
 	private final MotorRamp motorRamp = new MotorRamp(0.1);
 
 	public IntakeSubsystem() {}
@@ -37,6 +37,6 @@ public class IntakeSubsystem extends SubsystemBase {
 	}
 
 	public void toggleIntakeExtension() {
-		this.intakePiston.set(MoUtil.getSolenoidOpposite(this.intakePiston.get()));
+		//this.intakePiston.set(MoUtil.getSolenoidOpposite(this.intakePiston.get()));
 	}
 }

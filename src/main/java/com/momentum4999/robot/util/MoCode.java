@@ -26,7 +26,8 @@ import org.usfirst.frc.team4999.utils.Utils;
  * <p>wait 1 second
  * <p>drive forward 3 seconds
  * <p>wait 0.5 seconds
- * <p>turn left 1 second
+ * <p>turn left 1 second=
+ * 
  */
 public class MoCode {
 	public static final MoCode INSTANCE = new MoCode()

@@ -10,7 +10,9 @@ public class ShooterSubsystem extends SubsystemBase {
 	private final CANSparkMax indexer = new CANSparkMax(Components.INDEXER, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax shooter = new CANSparkMax(Components.SHOOTER, CANSparkMaxLowLevel.MotorType.kBrushless);
 
-	public ShooterSubsystem() {}
+	public ShooterSubsystem() {
+		indexer.setInverted(true);
+	}
 
 	private boolean full() {
 		// TODO: Use sensor to detect when filled with 2 balls
@@ -50,5 +52,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	public void idleShooter() {
 		runShooter(0);
+	}
+
+	public void idle() {
+		idleIndexer();
+		idleShooter();
 	}
 }

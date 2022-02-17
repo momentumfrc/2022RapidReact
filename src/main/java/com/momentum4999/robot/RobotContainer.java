@@ -6,8 +6,6 @@ package com.momentum4999.robot;
 
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
-import com.momentum4999.robot.commands.ExampleCommand;
-import com.momentum4999.robot.commands.MotorTestCommand;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
@@ -48,7 +46,7 @@ public class RobotContainer {
 	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
 	// Commands
-	private final DriveCommand driveCommand = new DriveCommand(Mode.TANK, this.driveSubsystem, this.gamepad);
+	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
 	private final AutonomousCommand autoCommand = new AutonomousCommand(this, AutonomousCommand.readAutoMoCodeScript());
 
 	/**
@@ -66,7 +64,8 @@ public class RobotContainer {
 		this.intakeFwd.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem, this.shooterSubsystem));
 		this.intakeRev.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem, this.shooterSubsystem));
 		this.intakeToggle.whenPressed(new RunCommand(this.intakeSubsystem::toggleIntakeExtension, this.intakeSubsystem));
-		this.shoot.whenHeld(new RunCommand(() -> this.shooterSubsystem.shootAndIndex(), this.shooterSubsystem));
+		this.shoot.whenHeld(new RunCommand(() -> this.shooterSubsystem.shootAndIndex(), this.shooterSubsystem))
+				.whenReleased(new RunCommand(() -> this.shooterSubsystem.idle(), this.shooterSubsystem));
 	}
 
 	/**
