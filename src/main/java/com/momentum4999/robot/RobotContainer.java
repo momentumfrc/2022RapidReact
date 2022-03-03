@@ -66,15 +66,15 @@ public class RobotContainer {
 	private void configureButtonBindings() {
 		// ---------------------------------- Intake ----------------------------------
 		this.intakeFwd
-				.whenPressed(new InstantCommand(this::beginIntake))
-				.whenHeld(new RunCommand(() -> this.runIntake(false)))
-				.whenReleased(new InstantCommand(this::endIntake));
+				.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
+				.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem))
+				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
 		this.intakeRev
-				.whenPressed(new InstantCommand(this::beginIntake))
-				.whenHeld(new RunCommand(() -> this.runIntake(true)))
-				.whenReleased(new InstantCommand(this::endIntake));
-		this.shoot.whenHeld(new RunCommand(this::shoot))
-				.whenReleased(new InstantCommand(this::stopShooting));
+				.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
+				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
+				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
+		this.shoot.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
+				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
 	}
 
 	/**
@@ -119,22 +119,29 @@ public class RobotContainer {
 		// If reverse, spit out no matter what
 		if (!this.shooterSubsystem.fullOfBalls() || rev) {
 			this.shooterSubsystem.runIndexer(rev);
+		} else {
+			this.shooterSubsystem.idleIndexer();
 		}
 
 		this.intakeSubsystem.runIntake(rev);
 	}
 
 	public void shoot() {
-		this.shooterSubsystem.runShooter();
-
-		// Only run the indexer if the shooter is up to speed
 		if (this.shooterSubsystem.shooterUpToSpeed()) {
 			this.shooterSubsystem.runIndexer(false);
+			this.shooterSubsystem.runShooter();
+		} else {
+			if (this.shooterSubsystem.fullOfBalls()) {
+				this.shooterSubsystem.retractShooter();
+				this.shooterSubsystem.runIndexer(true);
+			} else {
+				this.shooterSubsystem.runShooter();
+				this.shooterSubsystem.idleIndexer();
+			}
 		}
 	}
 
 	public void stopShooting() {
-		this.shooterSubsystem.idleShooter();
-		this.shooterSubsystem.idleIndexer();
+		this.shooterSubsystem.idle();
 	}
 }

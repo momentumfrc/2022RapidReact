@@ -27,20 +27,28 @@ public class ShooterSubsystem extends SubsystemBase {
 		return Math.abs(shooterEncoder.getVelocity() - MoPrefs.SHOOTER_TARGET.get()) < MoPrefs.SHOOTER_TARGET_ERROR.get();
 	}
 
+	public boolean shooterEngaged() {
+		return shooterEncoder.getVelocity() > (0.1 * MoPrefs.SHOOTER_TARGET.get());
+	}
+
 	public void runIndexer(boolean rev) {
 		this.indexer.set((rev ? -1 : 1) * MoPrefs.INDEXER_SETPOINT.get());
 	}
 
 	public void idleIndexer() {
-		this.shooter.set(0);
+		this.indexer.stopMotor();
 	}
 
 	public void runShooter() {
 		this.shooter.set(MoPrefs.SHOOTER_SETPOINT.get());
 	}
 
+	public void retractShooter() {
+		this.shooter.set(-0.2 * MoPrefs.SHOOTER_SETPOINT.get());
+	}
+
 	public void idleShooter() {
-		this.shooter.set(0);
+		this.shooter.stopMotor();
 	}
 
 	public void idle() {

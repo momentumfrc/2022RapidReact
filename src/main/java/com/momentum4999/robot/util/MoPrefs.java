@@ -28,9 +28,9 @@ public class MoPrefs {
 	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
 		"ShooterSetpoint", 1);
 	public static final Pref<Double> SHOOTER_TARGET = doublePref(
-		"ShooterTarget", 5600);
+		"ShooterTarget", 4800);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
-		"ShooterTargetError", 100);
+		"ShooterTargetError", 280);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
