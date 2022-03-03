@@ -17,7 +17,10 @@ import com.momentum4999.robot.util.Components;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
 
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
@@ -32,12 +35,13 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
  */
 public class RobotContainer {
 	// Components
-	private final InputDevice gamepad = createGamepad();
+	public final InputDevice gamepad = createGamepad();
+	public final PneumaticsControlModule pneumatics = new PneumaticsControlModule();
+	public final PowerDistribution pdp = new PowerDistribution();
 
 	// Joystick Buttons
 	private final JoystickButton intakeFwd = gamepad.getJoystickButton(InputButton.LB);
 	private final JoystickButton intakeRev = gamepad.getJoystickButton(InputButton.A);
-	private final JoystickButton intakeToggle = gamepad.getJoystickButton(InputButton.B);
 	private final JoystickButton shoot = gamepad.getJoystickButton(InputButton.RB);
 
 	// Subsystems
@@ -61,11 +65,16 @@ public class RobotContainer {
 	 */
 	private void configureButtonBindings() {
 		// ---------------------------------- Intake ----------------------------------
-		this.intakeFwd.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem, this.shooterSubsystem));
-		this.intakeRev.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem, this.shooterSubsystem));
-		this.intakeToggle.whenPressed(new RunCommand(this.intakeSubsystem::toggleIntakeExtension, this.intakeSubsystem));
-		this.shoot.whenHeld(new RunCommand(() -> this.shooterSubsystem.shootAndIndex(), this.shooterSubsystem))
-				.whenReleased(new RunCommand(() -> this.shooterSubsystem.idle(), this.shooterSubsystem));
+		this.intakeFwd
+				.whenPressed(new InstantCommand(this::beginIntake))
+				.whenHeld(new RunCommand(() -> this.runIntake(false)))
+				.whenReleased(new InstantCommand(this::endIntake));
+		this.intakeRev
+				.whenPressed(new InstantCommand(this::beginIntake))
+				.whenHeld(new RunCommand(() -> this.runIntake(true)))
+				.whenReleased(new InstantCommand(this::endIntake));
+		this.shoot.whenHeld(new RunCommand(this::shoot))
+				.whenReleased(new InstantCommand(this::stopShooting));
 	}
 
 	/**
@@ -85,11 +94,6 @@ public class RobotContainer {
 		this.driveSubsystem.stop();
 	}
 
-	public void runIntake(boolean rev) {
-		this.intakeSubsystem.runIntake(rev);
-		this.shooterSubsystem.indexWhileIntaking(rev);
-	}
-
 	public static InputDevice createGamepad() {
 		/* USE FOR TWO DRIVER MODE
 		return new MoMultiGamepad(
@@ -98,5 +102,39 @@ public class RobotContainer {
 		);
 		*/
 		return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
+	}
+
+	public void beginIntake() {
+		this.intakeSubsystem.setIntake(true);
+	}
+
+	public void endIntake() {
+		this.intakeSubsystem.setIntake(false);
+		this.intakeSubsystem.idleIntake();
+		this.shooterSubsystem.idleIndexer();
+	}
+
+	public void runIntake(boolean rev) {
+		// If forward, stop indexer when full
+		// If reverse, spit out no matter what
+		if (!this.shooterSubsystem.fullOfBalls() || rev) {
+			this.shooterSubsystem.runIndexer(rev);
+		}
+
+		this.intakeSubsystem.runIntake(rev);
+	}
+
+	public void shoot() {
+		this.shooterSubsystem.runShooter();
+
+		// Only run the indexer if the shooter is up to speed
+		if (this.shooterSubsystem.shooterUpToSpeed()) {
+			this.shooterSubsystem.runIndexer(false);
+		}
+	}
+
+	public void stopShooting() {
+		this.shooterSubsystem.idleShooter();
+		this.shooterSubsystem.idleIndexer();
 	}
 }

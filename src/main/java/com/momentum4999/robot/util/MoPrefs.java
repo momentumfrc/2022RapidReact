@@ -22,7 +22,15 @@ public class MoPrefs {
 
 	// ----------------- Define Preferences Here -----------------
 	public static final Pref<Double> INTAKE_ROLLER_SETPOINT = doublePref(
-		"IntakeRollerSetpoint", 0.125);
+		"IntakeRollerSetpoint", 1);
+	public static final Pref<Double> INDEXER_SETPOINT = doublePref(
+		"IndexerSetpoint", 1);
+	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
+		"ShooterSetpoint", 1);
+	public static final Pref<Double> SHOOTER_TARGET = doublePref(
+		"ShooterTarget", 5600);
+	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
+		"ShooterTargetError", 100);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {

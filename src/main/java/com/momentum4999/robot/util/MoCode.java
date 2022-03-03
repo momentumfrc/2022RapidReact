@@ -35,7 +35,6 @@ public class MoCode {
 		.withStep("drive", DriveStep::new)
 		.withStep("turn", TurnStep::new)
 		.withStep("set", SetPowerStep::new)
-		.withStep("intake", IntakeToggleStep::new)
 		.withStep("roller", RollerStep::new)
 		.withStep("shoot", ShootStep::new);
 	
@@ -104,30 +103,29 @@ public class MoCode {
 		}
 
 		public void setRobotIntaking(boolean rev) {
+			this.robot.beginIntake();
 			this.intaking = rev ? -1 : 1;
 		}
 
 		public void stopRobotIntaking() {
+			this.robot.endIntake();
 			this.intaking = 0;
 		}
 
 		public void setRobotShooting(boolean shooting) {
 			this.shooting = shooting;
+			if (!shooting) {
+				robot.stopShooting();
+			}
 		}
 
 		public void periodic() {
 			this.robot.driveSubsystem.driveDirect(this.driveLeft, this.driveRight);
 			if (this.intaking != 0) {
 				this.robot.runIntake(this.intaking < 0);
-			} else {
-				this.robot.intakeSubsystem.idleIntake();
-				this.robot.shooterSubsystem.idleIndexer();
 			}
 			if (this.shooting) {
-				this.robot.shooterSubsystem.shootAndIndex();
-			} else {
-				this.robot.shooterSubsystem.idleShooter();
-				this.robot.shooterSubsystem.idleIndexer();
+				this.robot.shoot();
 			}
 		}
 	}
@@ -298,22 +296,6 @@ public class MoCode {
 				Thread.sleep((long)(this.time * 1000));
 				runtime.stopRobotIntaking();
 			} catch (InterruptedException ignored) {}
-		}
-	}
-
-	public static class IntakeToggleStep extends Step {
-		private static final LineValidator VALIDATOR = new LineValidator()
-			.literal("toggle");
-
-		public IntakeToggleStep(String[] tokens) {
-			if (!VALIDATOR.validate(tokens)) {
-				System.out.println("Invalid Line: "+String.join(" ", tokens));
-			}
-		}
-
-		@Override
-		public void execute(MoCodeRuntime runtime) {
-			runtime.robot.intakeSubsystem.toggleIntakeExtension();
 		}
 	}
 

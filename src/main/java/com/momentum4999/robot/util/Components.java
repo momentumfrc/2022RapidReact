@@ -8,10 +8,11 @@ public final class Components {
 	public static final int DR_LEFT = 1;
 	public static final int DR_RIGHT = 0;
 	public static final int INTAKE_ROLLER = 3;
-	public static final int INTAKE_PISTON_EXTEND = 4;
-	public static final int INTAKE_PISTON_RETRACT = 5;
+	public static final int INTAKE_PISTON_EXTEND = 0;
+	public static final int INTAKE_PISTON_RETRACT = 1;
 	public static final int INDEXER = 2;
-	public static final int SHOOTER = 1 ;
+	public static final int SHOOTER = 1;
+	public static final int SHOOTER_FULL_SENSOR = 4;
 
 	public static final int LOGITECH_F310_PORT = 2;
 }
