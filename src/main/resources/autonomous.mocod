@@ -17,3 +17,13 @@ intake toggle
 roller run 1 second
 roller reverse 1 second
 shoot 3 seconds
+
+
+drive forward 0.1524 meters
+shoot 6 seconds
+
+drive forward 1.04 meters
+intake 2.5 seconds
+drive backward 1.04 meters
+
+shoot 3 seconds
