@@ -196,17 +196,25 @@ public class MoCode {
 
 	public static class DriveStep extends Step {
 		private static final LineValidator VALIDATOR = new LineValidator()
-			.literal("forward", "backward").number().literal("second", "seconds");
+			.literal("forward", "backward").number().literal("second", "seconds", "meters");
 		public final double time;
+		public final double distance;
 		public final double speed;
 
 		public DriveStep(String[] tokens) {
 			if (VALIDATOR.validate(tokens)) {
+				if ("meters".equals(tokens[3])) {
+					this.distance = Double.parseDouble(tokens[2]);
+					this.time = 0;
+				} else {
+					this.time = Double.parseDouble(tokens[2]);
+					this.distance = 0;
+				}
 				this.speed = "backward".equals(tokens[1]) ? -1 : 1;
-				this.time = Double.parseDouble(tokens[2]);
 			} else {
 				this.speed = 0;
 				this.time = 0;
+				this.distance = 0;
 				System.out.println("Invalid Line: "+String.join(" ", tokens));
 			}
 		}
@@ -216,9 +224,13 @@ public class MoCode {
 			try {
 				double speed = this.speed * runtime.drivePower;
 
-				runtime.setRobotDrive(speed, speed);
-				Thread.sleep((long)(this.time * 1000));
-				runtime.setRobotDrive(0, 0);
+				if (distance > 0) {
+					runtime.setRobotDrive(speed, speed);
+				} else {
+					runtime.setRobotDrive(speed, speed);
+					Thread.sleep((long)(this.time * 1000));
+					runtime.setRobotDrive(0, 0);
+				}
 			} catch (InterruptedException ignored) {}
 		}
 	}

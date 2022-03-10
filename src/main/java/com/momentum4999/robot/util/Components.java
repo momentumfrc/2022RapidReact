@@ -7,7 +7,11 @@ package com.momentum4999.robot.util;
 public final class Components {
 	public static final int DR_LEFT = 1;
 	public static final int DR_RIGHT = 0;
-	public static final int INTAKE_ROLLER = 3;
+	public static final int ENC_LEFT_A = 0;
+	public static final int ENC_LEFT_B = 1;
+	public static final int ENC_RIGHT_A = 2;
+	public static final int ENC_RIGHT_B = 3;
+	public static final int INTAKE_ROLLER = 2;
 	public static final int INTAKE_PISTON_EXTEND = 0;
 	public static final int INTAKE_PISTON_RETRACT = 1;
 	public static final int INDEXER = 2;

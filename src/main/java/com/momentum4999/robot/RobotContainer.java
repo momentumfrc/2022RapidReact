@@ -127,21 +127,10 @@ public class RobotContainer {
 	}
 
 	public void shoot() {
-		if (this.shooterSubsystem.shooterUpToSpeed()) {
-			this.shooterSubsystem.runIndexer(false);
-			this.shooterSubsystem.runShooter();
-		} else {
-			if (this.shooterSubsystem.fullOfBalls()) {
-				this.shooterSubsystem.retractShooter();
-				this.shooterSubsystem.runIndexer(true);
-			} else {
-				this.shooterSubsystem.runShooter();
-				this.shooterSubsystem.idleIndexer();
-			}
-		}
+		this.shooterSubsystem.runActive();
 	}
 
 	public void stopShooting() {
-		this.shooterSubsystem.idle();
+		this.shooterSubsystem.stop();
 	}
 }
