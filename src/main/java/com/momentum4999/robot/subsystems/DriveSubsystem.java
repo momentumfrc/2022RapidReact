@@ -6,6 +6,7 @@ import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.InputDevice.InputAxis;
 import com.momentum4999.robot.util.Components;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.Encoder;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -36,8 +38,8 @@ public class DriveSubsystem extends SubsystemBase {
 	public DriveSubsystem() {
 		this.driveTrain.setDeadband(0);
 
-		this.leftEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
-		this.rightEncoder.setDistancePerPulse(1.0 / RobotConfig.DRIVE_ENCODER_TPF);
+		this.leftEncoder.setDistancePerPulse(-1f / RobotConfig.DRIVE_ENCODER_TPF);
+		this.rightEncoder.setDistancePerPulse(1f / RobotConfig.DRIVE_ENCODER_TPF);
 
 		this.right.setInverted(true);
 
@@ -59,6 +61,19 @@ public class DriveSubsystem extends SubsystemBase {
 	@Override
 	public void periodic() {
 		this.odometry.update(this.gyro.getRotation2d(), this.leftEncoder.getDistance(), this.rightEncoder.getDistance());
+		
+		SmartDashboard.putNumber("Average Distance", this.getAverageDrivenDistance());
+		SmartDashboard.putNumber("Left Distance", this.leftEncoder.getDistance());
+		SmartDashboard.putNumber("Right Distance", this.rightEncoder.getDistance());
+		SmartDashboard.putNumber("Gyro Degrease", this.getPose().getRotation().getDegrees());
+	}
+
+	public double getAverageDrivenDistance() {
+		return (this.leftEncoder.getDistance() + this.rightEncoder.getDistance()) * 0.5;
+	}
+
+	public Pose2d getPose() {
+		return this.odometry.getPoseMeters();
 	}
 
 	public enum Mode {

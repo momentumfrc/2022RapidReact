@@ -1,11 +1,14 @@
 package com.momentum4999.robot.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -35,10 +38,13 @@ public class MoCode {
 		.withStep("drive", DriveStep::new)
 		.withStep("turn", TurnStep::new)
 		.withStep("set", SetPowerStep::new)
-		.withStep("roller", RollerStep::new)
+		.withStep("intake", IntakeStep::new)
 		.withStep("shoot", ShootStep::new);
 	
 	private final Map<String, Function<String[], Step>> steps = new HashMap<>();
+
+	private final Map<String, MoCodeRuntime> loadedScripts = new HashMap<>();
+	private String defaultScript;
 
 	/**
 	 * Add a type of MoCode step to this compiler
@@ -53,18 +59,34 @@ public class MoCode {
 		return this;
 	}
 
+	public void loadScripts(RobotContainer robot) {
+		this.loadedScripts.clear();
+		this.defaultScript = null;
+
+		String scriptList = MoUtil.readResourceFile("scripts.txt");
+
+		for (String scriptName : scriptList.split("\n")) {
+			String scriptSrc = MoUtil.readResourceFile("scripts/"+scriptName);
+			this.loadedScripts.put(scriptName, this.compile(robot, scriptSrc));
+
+			if (this.defaultScript == null) {
+				this.defaultScript = scriptName;
+			}
+		}
+	}
+
 	/**
 	 * Compiles MoCode source code into a runnable function.
 	 * 
-	 * <p>The resulting {@link Consumer} <em>must be run on a separate thread from normal execution.</em>
+	 * <p>The resulting {@link MoCodeRuntime} must be updated periodically to run its contained command steps.
 	 * 
 	 * @param source The MoCode source code
-	 * @return a function which runs the compiled code
+	 * @return a runtime that can run the compiled code
 	 */
-	public Consumer<MoCodeRuntime> compile(String source) {
+	public MoCodeRuntime compile(RobotContainer robot, String source) {
 		String[] lines = source.split("\n");
 		
-		List<Consumer<MoCodeRuntime>> procedures = new ArrayList<>();
+		List<Step> compiledSteps = new ArrayList<>();
 
 		for (String line : lines) {
 			String[] tokens = line.split("\\s");
@@ -74,58 +96,76 @@ public class MoCode {
 			String stepType = tokens[0];
 
 			if (this.steps.containsKey(stepType)) {
-				Step step = this.steps.get(stepType).apply(tokens);
-
-				procedures.add(step::execute);
+				compiledSteps.add(this.steps.get(stepType).apply(tokens));
 			}
 		}
 
-		return robot -> {
-			procedures.forEach(p -> p.accept(robot));
-		};
+		return new MoCodeRuntime(robot, compiledSteps);
+	}
+
+	public Set<String> getLoadedScripts() {
+		return this.loadedScripts.keySet();
+	}
+
+	public MoCodeRuntime getRunnableScript(String library) {
+		return this.loadedScripts.get(library);
+	}
+
+	public String getDefaultScriptName() {
+		return this.defaultScript;
 	}
 
 	public static class MoCodeRuntime {
 		public final RobotContainer robot;
 		public double drivePower = 1;
-		public double driveLeft = 0;
-		public double driveRight = 0;
-		public int intaking = 0;
-		public boolean shooting;
+		public int intakeRunning = 0;
 
-		public MoCodeRuntime(RobotContainer robot) {
+		private final Deque<Step> toExecute;
+		private long lastCommandTimestamp = 0;
+
+		public MoCodeRuntime(RobotContainer robot, Collection<Step> steps) {
 			this.robot = robot;
+			this.toExecute = new ArrayDeque<>(steps);
 		}
 
-		public void setRobotDrive(double left, double right) {
-			this.driveLeft = left;
-			this.driveRight = right;
+		public void markAsRunningNewCommand() {
+			this.lastCommandTimestamp = System.currentTimeMillis();
 		}
 
-		public void setRobotIntaking(boolean rev) {
+		public long commandRunTime() {
+			return System.currentTimeMillis() - this.lastCommandTimestamp;
+		}
+
+		public void beginIntaking(boolean rev) {
 			this.robot.beginIntake();
-			this.intaking = rev ? -1 : 1;
+			this.intakeRunning = rev ? -1 : 1;
 		}
 
-		public void stopRobotIntaking() {
+		public void endIntaking() {
+			this.intakeRunning = 0;
 			this.robot.endIntake();
-			this.intaking = 0;
-		}
-
-		public void setRobotShooting(boolean shooting) {
-			this.shooting = shooting;
-			if (!shooting) {
-				robot.stopShooting();
-			}
 		}
 
 		public void periodic() {
-			this.robot.driveSubsystem.driveDirect(this.driveLeft, this.driveRight);
-			if (this.intaking != 0) {
-				this.robot.runIntake(this.intaking < 0);
+			if (this.toExecute.size() > 0) {
+				// Run the current command and check if terminated
+				boolean run = this.toExecute.peekFirst().execute(this);
+				if (!run) {
+					// If terminated, remove running command
+					this.toExecute.removeFirst();
+					// Init the next command
+					this.toExecute.peekFirst().init(this);
+				}
+
+				this.updateOthers();
+			} else {
+				this.robot.stopSubsystems();
 			}
-			if (this.shooting) {
-				this.robot.shoot();
+		}
+
+		public void updateOthers() {
+			if (intakeRunning != 0) {
+				this.robot.runIntake(intakeRunning < 0);
 			}
 		}
 	}
@@ -169,7 +209,11 @@ public class MoCode {
 	 * The base class for a MoCode step type
 	 */
 	public static abstract class Step {
-		public abstract void execute(MoCodeRuntime runtime);
+		public void init(MoCodeRuntime runtime) {
+			runtime.markAsRunningNewCommand();
+		}
+
+		public abstract boolean execute(MoCodeRuntime runtime);
 	}
 
 	public static class WaitStep extends Step {
@@ -187,23 +231,28 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
-			try {
-				Thread.sleep((long)(this.waitTime * 1000));
-			} catch (InterruptedException ignored) {}
+		public boolean execute(MoCodeRuntime runtime) {
+			int timeMillis = (int) (this.waitTime * 1000);
+
+			if (runtime.commandRunTime() < timeMillis) {
+				return true;
+			}
+			return false;
 		}
 	}
 
 	public static class DriveStep extends Step {
 		private static final LineValidator VALIDATOR = new LineValidator()
-			.literal("forward", "backward").number().literal("second", "seconds", "meters");
+			.literal("forward", "backward").number().literal("second", "seconds", "meter", "meters");
 		public final double time;
 		public final double distance;
 		public final double speed;
 
+		private double startDistance;
+
 		public DriveStep(String[] tokens) {
 			if (VALIDATOR.validate(tokens)) {
-				if ("meters".equals(tokens[3])) {
+				if (tokens[3].startsWith("meter")) {
 					this.distance = Double.parseDouble(tokens[2]);
 					this.time = 0;
 				} else {
@@ -220,47 +269,95 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
-			try {
-				double speed = this.speed * runtime.drivePower;
+		public void init(MoCodeRuntime runtime) {
+			super.init(runtime);
 
-				if (distance > 0) {
-					runtime.setRobotDrive(speed, speed);
-				} else {
-					runtime.setRobotDrive(speed, speed);
-					Thread.sleep((long)(this.time * 1000));
-					runtime.setRobotDrive(0, 0);
+			this.startDistance = runtime.robot.driveSubsystem.getAverageDrivenDistance();
+		}
+
+		@Override
+		public boolean execute(MoCodeRuntime runtime) {
+			double runSpeed = this.speed * runtime.drivePower;
+
+			if (this.distance > 0) {
+				double distanceDiff = Math.abs(this.startDistance - runtime.robot.driveSubsystem.getAverageDrivenDistance());
+				if (distanceDiff < this.distance) {
+					runtime.robot.driveSubsystem.driveDirect(runSpeed, runSpeed);
+
+					return true;
 				}
-			} catch (InterruptedException ignored) {}
+			} else {
+				int timeMillis = (int) (this.time * 1000);
+
+				if (runtime.commandRunTime() < timeMillis) {
+					runtime.robot.driveSubsystem.driveDirect(runSpeed, runSpeed);
+
+					return true;
+				}
+			}
+			runtime.robot.driveSubsystem.driveDirect(0, 0);
+
+			return false;
 		}
 	}
 
 	public static class TurnStep extends Step {
 		private static final LineValidator VALIDATOR = new LineValidator()
-			.literal("left", "right").number().literal("second", "seconds");
+			.literal("left", "right").number().literal("second", "seconds", "degree", "degrees");
 		public final double time;
 		public final double speed;
+		public final double angle;
+
+		private double startAngle;
 
 		public TurnStep(String[] tokens) {
 			if (VALIDATOR.validate(tokens)) {
+				if (tokens[3].startsWith("degree")) {
+					this.angle = Double.parseDouble(tokens[2]);
+					this.time = 0;
+				} else {
+					this.time = Double.parseDouble(tokens[2]);
+					this.angle = 0;
+				}
 				this.speed = "left".equals(tokens[1]) ? -1 : 1;
-				this.time = Double.parseDouble(tokens[2]);
 			} else {
 				this.speed = 0;
 				this.time = 0;
+				this.angle = 0;
 				System.out.println("Invalid Line: "+String.join(" ", tokens));
 			}
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
-			try {
-				double speed = this.speed * runtime.drivePower;
+		public void init(MoCodeRuntime runtime) {
+			super.init(runtime);
 
-				runtime.setRobotDrive(speed, -speed);
-				Thread.sleep((long)(this.time * 1000));
-				runtime.setRobotDrive(0, 0);
-			} catch (InterruptedException ignored) {}
+			this.startAngle = runtime.robot.driveSubsystem.getPose().getRotation().getDegrees();
+		}
+
+		@Override
+		public boolean execute(MoCodeRuntime runtime) {
+			double runSpeed = this.speed * runtime.drivePower;
+
+			if (this.angle > 0) {
+				double angleDiff = Math.abs(this.startAngle - runtime.robot.driveSubsystem.getPose().getRotation().getDegrees());
+				if (angleDiff < this.angle) {
+					runtime.robot.driveSubsystem.driveDirect(runSpeed, -runSpeed);
+
+					return true;
+				}
+			} else {
+				int timeMillis = (int) (this.time * 1000);
+
+				if (runtime.commandRunTime() < timeMillis) {
+					runtime.robot.driveSubsystem.driveDirect(runSpeed, -runSpeed);
+
+					return true;
+				}
+			}
+			runtime.robot.driveSubsystem.driveDirect(0, 0);
+			
+			return false;
 		}
 	}
 
@@ -279,35 +376,51 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
+		public boolean execute(MoCodeRuntime runtime) {
 			runtime.drivePower = this.power;
+
+			return false;
 		}
 	}
 
-	public static class RollerStep extends Step {
+	public static class IntakeStep extends Step {
 		private static final LineValidator VALIDATOR = new LineValidator()
-			.literal("run", "reverse").number().literal("second", "seconds");
-		public final double time;
+			.literal("forward", "reverse", "stop");
+		public final boolean start;
 		public final boolean rev;
+		private final boolean valid;
 
-		public RollerStep(String[] tokens) {
+		public IntakeStep(String[] tokens) {
 			if (VALIDATOR.validate(tokens)) {
+				this.start = !("stop".equals(tokens[1]));
 				this.rev = "reverse".equals(tokens[1]);
-				this.time = Double.parseDouble(tokens[2]);
+				this.valid = true;
 			} else {
+				this.start = false;
 				this.rev = false;
-				this.time = 0;
+				this.valid = false;
 				System.out.println("Invalid Line: "+String.join(" ", tokens));
 			}
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
-			try {
-				runtime.setRobotIntaking(this.rev);
-				Thread.sleep((long)(this.time * 1000));
-				runtime.stopRobotIntaking();
-			} catch (InterruptedException ignored) {}
+		public void init(MoCodeRuntime runtime) {
+			super.init(runtime);
+
+			runtime.robot.beginIntake();
+		}
+
+		@Override
+		public boolean execute(MoCodeRuntime runtime) {
+			if (this.valid) {
+				if (this.start) {
+					runtime.beginIntaking(this.rev);
+				} else {
+					runtime.endIntaking();
+				}
+			}
+
+			return false;
 		}
 	}
 
@@ -326,12 +439,17 @@ public class MoCode {
 		}
 
 		@Override
-		public void execute(MoCodeRuntime runtime) {
-			try {
-				runtime.setRobotShooting(true);
-				Thread.sleep((long)(this.time * 1000));
-				runtime.setRobotShooting(false);
-			} catch (InterruptedException ignored) {}
+		public boolean execute(MoCodeRuntime runtime) {
+			int timeMillis = (int) (this.time * 1000);
+
+			if (runtime.commandRunTime() < timeMillis) {
+				runtime.robot.shoot();
+
+				return true;
+			}
+			runtime.robot.stopShooting();
+
+			return false;
 		}
 	}
 }

@@ -7,6 +7,7 @@ package com.momentum4999.robot;
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.input.InputDevice;
+import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
@@ -14,6 +15,9 @@ import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
+import com.momentum4999.robot.util.MoCode;
+import com.momentum4999.robot.util.MoShuffleboard;
+import com.momentum4999.robot.widgets.AutoScriptChooser;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
 
@@ -51,13 +55,20 @@ public class RobotContainer {
 
 	// Commands
 	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
-	private final AutonomousCommand autoCommand = new AutonomousCommand(this, AutonomousCommand.readAutoMoCodeScript());
+	private final AutonomousCommand autoCommand = new AutonomousCommand(this);
+
+	// Shuffleboard
+	public final MoShuffleboard shuffleboard = new MoShuffleboard();
+	public final AutoScriptChooser autoScriptChooser;
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
 	 */
 	public RobotContainer() {
+		MoCode.INSTANCE.loadScripts(this);
+
 		configureButtonBindings();
+		this.autoScriptChooser = new AutoScriptChooser(this); // Auto scripts need to be loaded before this is initialized
 	}
 
 	/**
@@ -95,13 +106,11 @@ public class RobotContainer {
 	}
 
 	public static InputDevice createGamepad() {
-		/* USE FOR TWO DRIVER MODE
 		return new MoMultiGamepad(
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT - 1)),
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT))
 		);
-		*/
-		return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
+		//return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
 	}
 
 	public void beginIntake() {

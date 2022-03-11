@@ -1,0 +1,3 @@
+auto1.mocod
+another.mocod
+auto2.mocod

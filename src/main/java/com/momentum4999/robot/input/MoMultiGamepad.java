@@ -1,5 +1,6 @@
 package com.momentum4999.robot.input;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -11,7 +12,7 @@ public class MoMultiGamepad extends InputDevice {
 	private final List<Entry> gamepads;
 
 	public MoMultiGamepad(Entry entry, Entry ... others) {
-		List<Entry> entries = Arrays.asList(others);
+		List<Entry> entries = new ArrayList<>(Arrays.asList(others));
 		entries.add(0, entry);
 
 		this.gamepads = entries;
@@ -71,7 +72,7 @@ public class MoMultiGamepad extends InputDevice {
 		}
 
 		public Entry denyAxes(InputAxis ... axes) {
-			List<InputAxis> axisList = Arrays.asList(axes);
+			List<InputAxis> axisList = new ArrayList<>(Arrays.asList(axes));
 			this.axisFilter = this.axisFilter.and(axisList::contains);
 
 			return this;
