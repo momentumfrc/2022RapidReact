@@ -1,0 +1,5 @@
+set drive power 70 percent
+
+turn left 15 degrees
+wait 2 seconds
+turn right 15 degrees

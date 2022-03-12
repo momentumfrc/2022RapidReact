@@ -18,5 +18,5 @@ public final class Components {
 	public static final int SHOOTER = 1;
 	public static final int SHOOTER_FULL_SENSOR = 4;
 
-	public static final int LOGITECH_F310_PORT = 2;
+	public static final int LOGITECH_F310_PORT = 1;
 }

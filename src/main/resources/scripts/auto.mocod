@@ -1,0 +1,7 @@
+shoot 2.5 seconds
+
+//set drive power 40 percent
+//turn right 20 degrees
+
+set drive power 70 percent
+drive forward 2 meters

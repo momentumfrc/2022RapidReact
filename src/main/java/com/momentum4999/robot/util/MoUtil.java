@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import com.momentum4999.robot.Robot;
 
@@ -34,16 +36,6 @@ public final class MoUtil {
 		return angle;
 	}
 
-	public static boolean wrappedAngleCompare(boolean greaterThan, double a, double b, double reference) {
-		//double lowerBound = wrapAngleDeg(reference - )
-		//if (greaterThan) {
-		//	if (a > -180 && a < 0 && b > 180 && b < 0) {
-
-		//	}
-		//}
-		return true;
-	}
-
 	public static String readResourceFile(String file) {
 		try (InputStream in = Robot.class.getClassLoader().getResourceAsStream(file)) {
 			if (in == null) {
@@ -51,7 +43,10 @@ public final class MoUtil {
 				return "";
 			}
 
-			return new BufferedReader(new InputStreamReader(in)).lines().reduce((a, b) -> a + "\n" + b).get();
+			Stream<String> data = new BufferedReader(new InputStreamReader(in)).lines();
+			try {
+				return data.reduce((a, b) -> a + "\n" + b).get();
+			} catch (NoSuchElementException ignored) {}
 		} catch (IOException ex) {
 			System.err.println("Failed to read resource file '"+file+"': " + ex.getMessage());
 		}

@@ -10,6 +10,7 @@ import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
+import com.momentum4999.robot.input.InputDevice.JoystickButtonHolder;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
@@ -44,9 +45,9 @@ public class RobotContainer {
 	public final PowerDistribution pdp = new PowerDistribution();
 
 	// Joystick Buttons
-	private final JoystickButton intakeFwd = gamepad.getJoystickButton(InputButton.LB);
-	private final JoystickButton intakeRev = gamepad.getJoystickButton(InputButton.A);
-	private final JoystickButton shoot = gamepad.getJoystickButton(InputButton.RB);
+	private final JoystickButtonHolder intakeFwd = gamepad.getJoystickButton(InputButton.LB);
+	private final JoystickButtonHolder intakeRev = gamepad.getJoystickButton(InputButton.A);
+	private final JoystickButtonHolder shoot = gamepad.getJoystickButton(InputButton.RB);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
@@ -76,16 +77,22 @@ public class RobotContainer {
 	 */
 	private void configureButtonBindings() {
 		// ---------------------------------- Intake ----------------------------------
-		this.intakeFwd
-				.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
+		this.intakeFwd.apply(button -> {
+			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
 				.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem))
 				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
-		this.intakeRev
-				.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
+		});
+		this.intakeRev.apply(button -> {
+			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
 				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
 				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
-		this.shoot.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
+		});
+				
+		// ---------------------------------- Shooter ---------------------------------
+		this.shoot.apply(button -> {
+			button.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
+		});
 	}
 
 	/**
@@ -107,8 +114,8 @@ public class RobotContainer {
 
 	public static InputDevice createGamepad() {
 		return new MoMultiGamepad(
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT - 1)),
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT))
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
+			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
 		);
 		//return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
 	}

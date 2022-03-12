@@ -1,5 +1,7 @@
 package com.momentum4999.robot.util;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -12,6 +14,7 @@ public class MoPrefs {
 	private static MoPrefs instance = null;
 
 	private static final String tableKey = "Preferences";
+	private static final Set<Runnable> initListeners = new HashSet<>();
 	private final NetworkTable table;
 
 	// Number preferences are defined like so:
@@ -26,9 +29,9 @@ public class MoPrefs {
 	public static final Pref<Double> INDEXER_SETPOINT = doublePref(
 		"IndexerSetpoint", 1);
 	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
-		"ShooterSetpoint", 4800);
+		"ShooterSetpoint", 2500);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
-		"ShooterTargetError", 120);
+		"ShooterTargetError", 200);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
@@ -56,6 +59,8 @@ public class MoPrefs {
 		}
 
 		instance = new MoPrefs();
+
+		initListeners.forEach(Runnable::run);
 	}
 
 	public static final class Pref<T> {
@@ -73,6 +78,12 @@ public class MoPrefs {
 			this.defaultValue = defaultValue;
 			this.getter = getter;
 			this.setter = setter;
+
+			initListeners.add(this::init);
+		}
+
+		private void init() {
+			this.set(defaultValue);
 		}
 
 		public T get() {

@@ -1,5 +1,8 @@
 package com.momentum4999.robot.input;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
@@ -21,7 +24,10 @@ public class MoSingleGamepad extends InputDevice {
 	}
 
 	@Override
-	public JoystickButton getJoystickButton(InputButton button) {
-		return new JoystickButton(this.gamepad, button.id);
+	public JoystickButtonHolder getJoystickButton(InputButton button) {
+		List<JoystickButton> buttons = new ArrayList<>();
+		buttons.add(new JoystickButton(this.gamepad, button.id));
+		
+		return new JoystickButtonHolder(buttons);
 	}
 }

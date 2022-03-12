@@ -20,13 +20,18 @@ public class MoMultiGamepad extends InputDevice {
 
 	@Override
 	public double axisStatusInternal(InputAxis axis) {
+		double value = 0;
+
 		for (Entry e : gamepads) {
 			if (e.axisFilter.test(axis)) {
-				return e.gamepad.getRawAxis(axis.id);
+				double axisValue = e.gamepad.getRawAxis(axis.id);
+				if (Math.abs(axisValue) > Math.abs(value)) {
+					value = axisValue;
+				}
 			}
 		}
 
-		return 0;
+		return value;
 	}
 
 	@Override
@@ -41,14 +46,15 @@ public class MoMultiGamepad extends InputDevice {
 	}
 
 	@Override
-	public JoystickButton getJoystickButton(InputButton button) {
+	public JoystickButtonHolder getJoystickButton(InputButton button) {
+		List<JoystickButton> buttons = new ArrayList<>();
 		for (Entry e : gamepads) {
 			if (e.buttonFilter.test(button)) {
-				return new JoystickButton(e.gamepad, button.id);
+				buttons.add(new JoystickButton(e.gamepad, button.id));
 			}
 		}
 
-		return null;
+		return new JoystickButtonHolder(buttons);
 	}
 
 	public static Entry entry(GenericHID controller) {

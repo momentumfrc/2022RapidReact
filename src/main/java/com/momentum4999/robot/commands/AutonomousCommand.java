@@ -17,13 +17,16 @@ public class AutonomousCommand extends CommandBase {
 	@Override
 	public void execute() {
 		if (this.runtime == null) {
-			this.runtime = this.robot.autoScriptChooser.getSelected();
+			this.runtime = this.robot.autoScriptChooser.getSelectedRuntime();
 		}
 		this.runtime.periodic();
 	}
 
 	@Override
 	public void end(boolean interrupted) {
-		this.runtime.robot.stopSubsystems();
+		this.robot.stopSubsystems();
+		this.runtime = null;
+
+		MoCode.INSTANCE.loadScripts(this.robot);
 	}
 }

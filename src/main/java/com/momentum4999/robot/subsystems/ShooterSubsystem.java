@@ -33,7 +33,7 @@ public class ShooterSubsystem extends SubsystemBase {
 	}
 
 	public boolean shooterUpToSpeed() {
-		return Math.abs(shooterEncoder.getVelocity() - MoPrefs.SHOOTER_SETPOINT.get()) < MoPrefs.SHOOTER_TARGET_ERROR.get();
+		return this.shooterEncoder.getVelocity() > MoPrefs.SHOOTER_SETPOINT.get() - MoPrefs.SHOOTER_TARGET_ERROR.get();
 	}
 
 	public void runIndexer(boolean rev) {

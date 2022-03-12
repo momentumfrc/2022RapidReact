@@ -1,5 +1,8 @@
 package com.momentum4999.robot.input;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.usfirst.frc.team4999.utils.Utils;
 
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -9,7 +12,7 @@ public abstract class InputDevice {
 
 	protected abstract boolean buttonStatusInternal(InputButton button);
 
-	public abstract JoystickButton getJoystickButton(InputButton button);
+	public abstract JoystickButtonHolder getJoystickButton(InputButton button);
 
 	public final boolean getButton(InputButton button) {
 		return this.buttonStatusInternal(button);
@@ -43,6 +46,18 @@ public abstract class InputDevice {
 			this.id = id;
 			this.min = min;
 			this.max = max;
+		}
+	}
+
+	public class JoystickButtonHolder {
+		private final List<JoystickButton> buttons;
+		
+		public JoystickButtonHolder(List<JoystickButton> buttons) {
+			this.buttons = buttons;
+		}
+
+		public void apply(Consumer<JoystickButton> action) {
+			this.buttons.forEach(action);
 		}
 	}
 }

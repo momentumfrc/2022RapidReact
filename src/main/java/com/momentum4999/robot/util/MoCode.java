@@ -121,7 +121,7 @@ public class MoCode {
 		public int intakeRunning = 0;
 
 		private final Deque<Step> toExecute;
-		private long lastCommandTimestamp = 0;
+		private long lastCommandTimestamp = -1;
 
 		public MoCodeRuntime(RobotContainer robot, Collection<Step> steps) {
 			this.robot = robot;
@@ -148,13 +148,20 @@ public class MoCode {
 
 		public void periodic() {
 			if (this.toExecute.size() > 0) {
+				if (lastCommandTimestamp <= 0) {
+					this.toExecute.peekFirst().init(this);
+				}
+
 				// Run the current command and check if terminated
 				boolean run = this.toExecute.peekFirst().execute(this);
+								
 				if (!run) {
 					// If terminated, remove running command
 					this.toExecute.removeFirst();
 					// Init the next command
-					this.toExecute.peekFirst().init(this);
+					if (this.toExecute.size() > 0) {
+						this.toExecute.peekFirst().init(this);
+					}
 				}
 
 				this.updateOthers();
@@ -305,7 +312,7 @@ public class MoCode {
 		private static final LineValidator VALIDATOR = new LineValidator()
 			.literal("left", "right").number().literal("second", "seconds", "degree", "degrees");
 		public final double time;
-		public final double speed;
+		public final boolean left;
 		public final double angle;
 
 		private double startAngle;
@@ -319,9 +326,9 @@ public class MoCode {
 					this.time = Double.parseDouble(tokens[2]);
 					this.angle = 0;
 				}
-				this.speed = "left".equals(tokens[1]) ? -1 : 1;
+				this.left = "left".equals(tokens[1]);
 			} else {
-				this.speed = 0;
+				this.left = false;
 				this.time = 0;
 				this.angle = 0;
 				System.out.println("Invalid Line: "+String.join(" ", tokens));
@@ -337,13 +344,13 @@ public class MoCode {
 
 		@Override
 		public boolean execute(MoCodeRuntime runtime) {
-			double runSpeed = this.speed * runtime.drivePower;
+			double runSpeed = (this.left ? -1 : 1) * runtime.drivePower;
 
 			if (this.angle > 0) {
-				double angleDiff = Math.abs(this.startAngle - runtime.robot.driveSubsystem.getPose().getRotation().getDegrees());
-				if (angleDiff < this.angle) {
-					runtime.robot.driveSubsystem.driveDirect(runSpeed, -runSpeed);
+				double angleDiff = Math.abs(MoUtil.wrapAngleDeg(this.startAngle - runtime.robot.driveSubsystem.getPose().getRotation().getDegrees()));
 
+				runtime.robot.driveSubsystem.driveDirect(runSpeed, -runSpeed);
+				if (angleDiff < this.angle) {
 					return true;
 				}
 			} else {
