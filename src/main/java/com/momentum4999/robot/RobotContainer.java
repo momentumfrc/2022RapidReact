@@ -4,6 +4,8 @@
 
 package com.momentum4999.robot;
 
+import java.util.Map;
+
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.input.InputDevice;
@@ -22,6 +24,8 @@ import com.momentum4999.robot.widgets.AutoScriptChooser;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
 
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -69,7 +73,11 @@ public class RobotContainer {
 		MoCode.INSTANCE.loadScripts(this);
 
 		configureButtonBindings();
+		
 		this.autoScriptChooser = new AutoScriptChooser(this); // Auto scripts need to be loaded before this is initialized
+		MoShuffleboard.matchTab()
+			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
+			.withSize(3, 3).withProperties(Map.of("Show controls", false));
 	}
 
 	/**

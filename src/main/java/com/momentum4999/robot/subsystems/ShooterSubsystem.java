@@ -1,7 +1,5 @@
 package com.momentum4999.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
 import com.revrobotics.CANSparkMax;

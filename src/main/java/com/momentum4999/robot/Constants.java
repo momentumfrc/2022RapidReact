@@ -13,4 +13,8 @@ package com.momentum4999.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+	public static final double LL_HEIGHT_CM = 92; // SUBJECT TO CHANGE
+	public static final double LL_ANGLE_DEG = 47; // SUBJECT TO CHANGE
+	public static final double LL_GOAL_HEIGHT_CM = 258.1275;
+	public static final double ROBOT_START_DIST_FROM_GOAL_M = 1.5; // INCORRECT
 }
