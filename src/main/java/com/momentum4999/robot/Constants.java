@@ -16,5 +16,8 @@ public final class Constants {
 	public static final double LL_HEIGHT_CM = 92; // SUBJECT TO CHANGE
 	public static final double LL_ANGLE_DEG = 47; // SUBJECT TO CHANGE
 	public static final double LL_GOAL_HEIGHT_CM = 258.1275;
-	public static final double ROBOT_START_DIST_FROM_GOAL_M = 1.5; // INCORRECT
+	public static final double ROBOT_LENGTH_M = 1; // INCORRECT
+	public static final double GOAL_DIAMETER_M = 1.2; // INCORRECT
+	public static final double ROBOT_START_DISTANCE_FROM_GOAL_M = 1.25; // INCORRECT
+	public static final double TARGETING_ANGLE_ERROR_DEG = 5;
 }

@@ -17,11 +17,15 @@ public class ShooterSubsystem extends SubsystemBase {
 	private final RelativeEncoder shooterEncoder = shooter.getEncoder();
 	private final SparkMaxPIDController shootPidController = shooter.getPIDController();
 	private final DigitalInput fullSensor = new DigitalInput(Components.SHOOTER_FULL_SENSOR);
+
+	private final TargetingSubsystem targeting;
+
 	private State shooterState = State.DEFAULT;
 
-	public ShooterSubsystem() {
-		this.indexer.setInverted(true);
+	public ShooterSubsystem(TargetingSubsystem targeting) {
+		this.targeting = targeting;
 
+		this.indexer.setInverted(true);
 		this.shootPidController.setP(0.00007, 0);
 		this.shootPidController.setFF(0.00018, 0);
 	}
@@ -50,7 +54,11 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shooter.set(-0.2);
 	}
 
-	public void runActive() {
+	public void runActive(boolean doTargeting) {
+		if (doTargeting) {
+			this.targeting.turnToTarget();
+		}
+
 		if (shooterState == State.DEFAULT) {
 			this.shooterState = State.LOADING;
 		} else if (shooterState == State.LOADING) {
@@ -67,7 +75,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		} else if (shooterState == State.SHOOTING) {
 			this.runShooter();
 
-			if (this.shooterUpToSpeed()) {
+			if (this.shooterUpToSpeed() && (this.targeting.isAtTarget() || !doTargeting)) {
 				this.runIndexer(false);
 			} else this.idleIndexer();
 		}

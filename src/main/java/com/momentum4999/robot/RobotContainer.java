@@ -10,12 +10,12 @@ import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoMultiGamepad;
-import com.momentum4999.robot.input.MoSingleGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.input.InputDevice.JoystickButtonHolder;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
+import com.momentum4999.robot.subsystems.TargetingSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoCode;
@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -56,7 +55,8 @@ public class RobotContainer {
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
+	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
 
 	// Commands
 	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
@@ -151,7 +151,11 @@ public class RobotContainer {
 	}
 
 	public void shoot() {
-		this.shooterSubsystem.runActive();
+		this.shooterSubsystem.runActive(true);
+	}
+
+	public void shootWithoutTargeting() {
+		this.shooterSubsystem.runActive(false);
 	}
 
 	public void stopShooting() {

@@ -15,18 +15,52 @@ public class TargetingSubsystem extends SubsystemBase {
 	private final DriveSubsystem driveSubsystem;
 	private final LimelightTableAdapter limelight = new LimelightTableAdapter();
 
-	private final Pose2d originPose;
+	private Pose2d originPose;
 	private Pose2d targetPose;
 
 	public TargetingSubsystem(DriveSubsystem drive) {
 		this.driveSubsystem = drive;
 
-		this.originPose = drive.getPose();
+		resetOrigin();
+	}
+
+	public void resetOrigin() {
+		this.originPose = this.driveSubsystem.getPose();
 		double yaw = this.originPose.getRotation().getDegrees();
 		Translation2d offset = new Translation2d(
 			Math.cos(Math.toDegrees(yaw)),
-			Math.sin(Math.toDegrees(yaw))).times(Constants.ROBOT_START_DIST_FROM_GOAL_M);
+			Math.sin(Math.toDegrees(yaw))).times(Constants.ROBOT_START_DISTANCE_FROM_GOAL_M);
 		this.targetPose = this.originPose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
+	}
+
+	public void turnToTarget() {
+		double power = this.getMotorPowerFromAngleDifference(this.getTargetAngleDifference());
+
+		if (!this.isAtTarget()) {
+			this.driveSubsystem.driveDirect(power, -power);
+		}
+	}
+
+	private double getMotorPowerFromAngleDifference(double angleDifference) {
+		// The 0.00002469135 is equal to (0.2)/(180^2)
+		double result = (0.00002469135 * (angleDifference - 180) * (angleDifference + 180)) + 1;
+		
+		if (angleDifference < 0) {
+			result *= -1;
+		}
+		return result;
+	}
+
+	public boolean isAtTarget() {
+		return Math.abs(this.getTargetAngleDifference()) < Constants.TARGETING_ANGLE_ERROR_DEG;
+	}
+
+	public double getTargetAngleDifference() {
+		Pose2d pose = getPoseRelativeToTarget();
+		double angle = MoUtil.wrapAngleDeg(Math.atan2(pose.getTranslation().getY(), pose.getTranslation().getX()));
+		double robotAngle = pose.getRotation().getDegrees();
+		
+		return MoUtil.wrapAngleDeg(angle - robotAngle);
 	}
 
 	@Override
@@ -44,7 +78,7 @@ public class TargetingSubsystem extends SubsystemBase {
 
 		Translation2d offset = new Translation2d(
 			Math.cos(Math.toDegrees(yaw)),
-			Math.sin(Math.toDegrees(yaw))).times(distance);
+			Math.sin(Math.toDegrees(yaw))).times(distance + (Constants.GOAL_DIAMETER_M * 0.5));
 		this.targetPose = this.originPose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
 	}
 
