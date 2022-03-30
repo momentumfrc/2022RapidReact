@@ -7,11 +7,12 @@ package com.momentum4999.robot;
 import java.util.Map;
 
 import com.momentum4999.robot.commands.AutonomousCommand;
-import com.momentum4999.robot.commands.DriveCommand;
+import com.momentum4999.robot.commands.TeleOpCommand;
 import com.momentum4999.robot.input.InputDevice;
 import com.momentum4999.robot.input.MoMultiGamepad;
 import com.momentum4999.robot.input.InputDevice.InputButton;
 import com.momentum4999.robot.input.InputDevice.JoystickButtonHolder;
+import com.momentum4999.robot.subsystems.ClimberSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
@@ -28,6 +29,7 @@ import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -51,15 +53,17 @@ public class RobotContainer {
 	private final JoystickButtonHolder intakeFwd = gamepad.getJoystickButton(InputButton.LB);
 	private final JoystickButtonHolder intakeRev = gamepad.getJoystickButton(InputButton.A);
 	private final JoystickButtonHolder shoot = gamepad.getJoystickButton(InputButton.RB);
+	private final JoystickButtonHolder shootNoTarget = gamepad.getJoystickButton(InputButton.B);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
 	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
+	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
 	// Commands
-	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
+	private final TeleOpCommand teleOpCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.climberSubsystem, this.gamepad);
 	private final AutonomousCommand autoCommand = new AutonomousCommand(this);
 
 	// Shuffleboard
@@ -98,7 +102,13 @@ public class RobotContainer {
 				
 		// ---------------------------------- Shooter ---------------------------------
 		this.shoot.apply(button -> {
-			button.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
+			button.whenPressed(new InstantCommand(() -> 
+			this.targetingSubsystem.limelight.setLight(true)))
+				.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
+				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
+		});
+		this.shootNoTarget.apply(button -> {
+			button.whenHeld(new RunCommand(this::shootWithoutTargeting, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
 		});
 	}
@@ -113,7 +123,20 @@ public class RobotContainer {
 	}
 
 	public Command getRunningTeleopCommand() {
-		return this.driveCommand;
+		return this.teleOpCommand;
+	}
+
+	public void teleopInit() {
+		if (!this.targetingSubsystem.hasFirstInit()) {
+			this.targetingSubsystem.resetOrigin();
+		}
+	}
+
+	public void robotPeriodic() {
+		/*
+		for (int i = 0; i < this.pdp.getNumChannels(); i++) {
+			SmartDashboard.putNumber("PDP Channel "+i, this.pdp.getCurrent(i));
+		}*/
 	}
 
 	public void stopSubsystems() {
@@ -160,5 +183,6 @@ public class RobotContainer {
 
 	public void stopShooting() {
 		this.shooterSubsystem.stop();
+		this.targetingSubsystem.limelight.setLight(false);
 	}
 }

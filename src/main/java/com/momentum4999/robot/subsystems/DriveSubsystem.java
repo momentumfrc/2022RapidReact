@@ -61,7 +61,7 @@ public class DriveSubsystem extends SubsystemBase {
 	@Override
 	public void periodic() {
 		this.odometry.update(this.gyro.getRotation2d(), this.leftEncoder.getDistance(), this.rightEncoder.getDistance());
-		
+
 		SmartDashboard.putNumber("Average Distance", this.getAverageDrivenDistance());
 		SmartDashboard.putNumber("Left Distance", this.leftEncoder.getDistance());
 		SmartDashboard.putNumber("Right Distance", this.rightEncoder.getDistance());

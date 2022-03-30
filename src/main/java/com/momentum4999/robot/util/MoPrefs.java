@@ -29,7 +29,27 @@ public class MoPrefs {
 	public static final Pref<Double> INDEXER_SETPOINT = doublePref(
 		"IndexerSetpoint", 1);
 	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
-		"ShooterSetpoint", 2500);
+		"ShooterSetpoint", 4000);
+	public static final Pref<Double> HOOD_SETPOINT = doublePref(
+		"HoodSetpoint", 0.25);
+	public static final Pref<Double> HOOD_DISTANCE_TEST = doublePref(
+		"HoodDistanceTest", 10);
+	public static final Pref<Double> CLIMBER_RAISE_SETPOINT = doublePref(
+		"ClimbRaiseSetpoint", 1);
+	public static final Pref<Double> CLIMBER_RAISE_MIN = doublePref(
+		"ClimbRaiseMin", 0);
+	public static final Pref<Double> CLIMBER_RAISE_MAX = doublePref(
+		"ClimbRaiseMax", 100);
+	public static final Pref<Double> CLIMBER_ADJUST_SETPOINT = doublePref(
+		"ClimbAdjustSetpoint", 1);
+	public static final Pref<Double> CLIMBER_ADJUST_MIN = doublePref(
+		"ClimbAdjustMin", 0);
+	public static final Pref<Double> CLIMBER_ADJUST_MAX = doublePref(
+		"ClimbAdjustMax", 100);
+	public static final Pref<Double> TARGETING_MIN_PWR = doublePref(
+		"TargetingMinPower", 0.42);
+	public static final Pref<Double> TARGETING_FALLOFF = doublePref(
+		"TargetingFalloff", 6);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
 		"ShooterTargetError", 200);
 	// -----------------------------------------------------------

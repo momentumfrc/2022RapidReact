@@ -1,6 +1,7 @@
 package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.Constants;
+import com.momentum4999.robot.util.MoPrefs;
 import com.momentum4999.robot.util.MoUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -9,46 +10,56 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class TargetingSubsystem extends SubsystemBase {
 	private final DriveSubsystem driveSubsystem;
-	private final LimelightTableAdapter limelight = new LimelightTableAdapter();
+	public final LimelightTableAdapter limelight = new LimelightTableAdapter();
 
 	private Pose2d originPose;
 	private Pose2d targetPose;
+	private boolean hasFirstInit;
 
 	public TargetingSubsystem(DriveSubsystem drive) {
 		this.driveSubsystem = drive;
 
 		resetOrigin();
+		hasFirstInit = false;
 	}
 
 	public void resetOrigin() {
 		this.originPose = this.driveSubsystem.getPose();
 		double yaw = this.originPose.getRotation().getDegrees();
 		Translation2d offset = new Translation2d(
-			Math.cos(Math.toDegrees(yaw)),
-			Math.sin(Math.toDegrees(yaw))).times(Constants.ROBOT_START_DISTANCE_FROM_GOAL_M);
+			Math.cos(Math.toDegrees(-yaw)),
+			Math.sin(Math.toDegrees(-yaw))).times(Constants.ROBOT_START_DISTANCE_FROM_GOAL_M);
 		this.targetPose = this.originPose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
+		
+		SmartDashboard.putString("Target Position", this.targetPose.getTranslation().toString());
+		this.hasFirstInit = true;
+	}
+
+	private double calculateTurnPower(double angleDiff, double range, double minPower, double falloff) {
+		double coefficient = -(minPower / Math.pow(range, 4 * falloff));
+		double polynomial = Math.pow(angleDiff - range, 2 * falloff) * Math.pow(angleDiff + range, 2 * falloff);
+		double result = coefficient * polynomial + 1;
+
+		if (angleDiff < 0) {
+			result *= -1;
+		}
+		return result;
 	}
 
 	public void turnToTarget() {
-		double power = this.getMotorPowerFromAngleDifference(this.getTargetAngleDifference());
+		double power = this.calculateTurnPower(
+			this.getTargetAngleDifference(), 180, 
+			MoPrefs.TARGETING_MIN_PWR.get(), 
+			MoPrefs.TARGETING_FALLOFF.get());
 
 		if (!this.isAtTarget()) {
 			this.driveSubsystem.driveDirect(power, -power);
 		}
-	}
-
-	private double getMotorPowerFromAngleDifference(double angleDifference) {
-		// The 0.00002469135 is equal to (0.2)/(180^2)
-		double result = (0.00002469135 * (angleDifference - 180) * (angleDifference + 180)) + 1;
-		
-		if (angleDifference < 0) {
-			result *= -1;
-		}
-		return result;
 	}
 
 	public boolean isAtTarget() {
@@ -57,15 +68,31 @@ public class TargetingSubsystem extends SubsystemBase {
 
 	public double getTargetAngleDifference() {
 		Pose2d pose = getPoseRelativeToTarget();
-		double angle = MoUtil.wrapAngleDeg(Math.atan2(pose.getTranslation().getY(), pose.getTranslation().getX()));
+		double angle = MoUtil.wrapAngleDeg(-Math.toDegrees(Math.atan2(-pose.getTranslation().getY(), pose.getTranslation().getX())));
 		double robotAngle = pose.getRotation().getDegrees();
 		
-		return MoUtil.wrapAngleDeg(angle - robotAngle);
+		return MoUtil.wrapAngleDeg(robotAngle - angle);
+	}
+
+	public double getTargetDistance() {
+		Pose2d pose = getPoseRelativeToTarget();
+
+		return Math.sqrt(Math.pow(pose.getX(), 2) + Math.pow(pose.getY(), 2));
+	}
+
+	public boolean hasFirstInit() {
+		return this.hasFirstInit;
 	}
 
 	@Override
 	public void periodic() {
 		this.limelight.periodic();
+
+		SmartDashboard.putString("Robot Position", this.driveSubsystem.getPose().toString());
+		SmartDashboard.putNumber("Angle to Target", this.getTargetAngleDifference());
+		SmartDashboard.putNumber("Distance to Target", this.getTargetDistance());
+
+		SmartDashboard.putString("Target Offset Pose", this.getPoseRelativeToTarget().toString());
 
 		this.limelight.ifTarget(this::reOriginFromLimelight);
 	}
@@ -77,8 +104,8 @@ public class TargetingSubsystem extends SubsystemBase {
 		double yaw = MoUtil.wrapAngleDeg(this.driveSubsystem.getPose().getRotation().getDegrees() + hAngle);
 
 		Translation2d offset = new Translation2d(
-			Math.cos(Math.toDegrees(yaw)),
-			Math.sin(Math.toDegrees(yaw))).times(distance + (Constants.GOAL_DIAMETER_M * 0.5));
+			Math.cos(Math.toDegrees(-yaw)),
+			Math.sin(Math.toDegrees(-yaw))).times(distance + (Constants.GOAL_DIAMETER_M * 0.5));
 		this.targetPose = this.originPose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
 	}
 
@@ -115,6 +142,10 @@ public class TargetingSubsystem extends SubsystemBase {
 			if (this.hasTarget()) {
 				action.accept(this.hOffset, this.vOffset, this.targetArea);
 			}
+		}
+
+		public void setLight(boolean on) {
+			this.getTable().getEntry("ledMode").setNumber(on ? 3 : 1);
 		}
 
 		private static interface TargetConsumer {
