@@ -450,7 +450,7 @@ public class MoCode {
 			int timeMillis = (int) (this.time * 1000);
 
 			if (runtime.commandRunTime() < timeMillis) {
-				runtime.robot.shoot();
+				runtime.robot.shootWithoutTargeting();
 
 				return true;
 			}

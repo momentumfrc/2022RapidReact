@@ -34,9 +34,9 @@ public abstract class InputDevice {
 	}
 
 	public enum InputAxis {
-		LX(2, -1, 1), LY(1, -1, 1), 
+		LX(0, -1, 1), LY(1, -1, 1), 
 		RX(4, -1, 1), RY(5, -1, 1),
-		LT(3, -1, 0), RT(3, 0, 1);
+		LT(2, 0, 1), RT(3, 0, 1);
 
 		public final int id;
 		private final double min;

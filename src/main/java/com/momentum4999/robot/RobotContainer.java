@@ -21,6 +21,7 @@ import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoCode;
 import com.momentum4999.robot.util.MoShuffleboard;
+import com.momentum4999.robot.util.MoUtil;
 import com.momentum4999.robot.widgets.AutoScriptChooser;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
@@ -82,6 +83,8 @@ public class RobotContainer {
 		MoShuffleboard.matchTab()
 			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
 			.withSize(3, 3).withProperties(Map.of("Show controls", false));
+
+		this.targetingSubsystem.limelight.setLight(false);
 	}
 
 	/**
@@ -103,12 +106,14 @@ public class RobotContainer {
 		// ---------------------------------- Shooter ---------------------------------
 		this.shoot.apply(button -> {
 			button.whenPressed(new InstantCommand(() -> 
-			this.targetingSubsystem.limelight.setLight(true)))
+					this.targetingSubsystem.limelight.setLight(true)))
 				.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
 		});
 		this.shootNoTarget.apply(button -> {
-			button.whenHeld(new RunCommand(this::shootWithoutTargeting, this.shooterSubsystem))
+			button.whenPressed(new InstantCommand(() -> 
+					this.targetingSubsystem.limelight.setLight(true)))
+				.whenHeld(new RunCommand(this::shootWithoutTargeting, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
 		});
 	}
@@ -128,7 +133,7 @@ public class RobotContainer {
 
 	public void teleopInit() {
 		if (!this.targetingSubsystem.hasFirstInit()) {
-			this.targetingSubsystem.resetOrigin();
+			this.targetingSubsystem.resetTargetPose();
 		}
 	}
 
@@ -159,15 +164,13 @@ public class RobotContainer {
 		this.intakeSubsystem.setIntake(false);
 		this.intakeSubsystem.idleIntake();
 		this.shooterSubsystem.idleIndexer();
+		this.shooterSubsystem.idleShooter();
 	}
 
 	public void runIntake(boolean rev) {
-		// If forward, stop indexer when full
-		// If reverse, spit out no matter what
-		if (!this.shooterSubsystem.fullOfBalls() || rev) {
-			this.shooterSubsystem.runIndexer(rev);
-		} else {
-			this.shooterSubsystem.idleIndexer();
+		this.shooterSubsystem.runIndexer(rev);
+		if (rev) {
+			this.shooterSubsystem.retractShooter();
 		}
 
 		this.intakeSubsystem.runIntake(rev);

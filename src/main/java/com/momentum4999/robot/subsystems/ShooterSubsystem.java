@@ -2,10 +2,13 @@ package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
+import com.momentum4999.robot.util.MoUtil;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+
+import org.usfirst.frc.team4999.utils.Utils;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,6 +36,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
 		this.indexer.setInverted(true);
 		this.shooterB.setInverted(true);
+		this.shooterB.follow(shooterA, true);
 		this.hood.setInverted(true);
 
 		this.shootAPidController.setP(0.00007, 0);
@@ -47,11 +51,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	public boolean shooterUpToSpeed() {
 		double min = MoPrefs.SHOOTER_SETPOINT.get() - MoPrefs.SHOOTER_TARGET_ERROR.get();
-		return this.shooterAEncoder.getVelocity() > min && this.shooterBEncoder.getVelocity() > min;
+		return this.shooterAEncoder.getVelocity() > min;
 	}
 
-	public boolean hoodFullyOpen() {
-		return this.hood.getEncoder().getPosition() >= this.calcHoodTarget();
+	public boolean hoodFullyOpen(boolean calc) {
+		return this.hood.getEncoder().getPosition() >= this.calcHoodTarget(calc);
 	}
 
 	public void runIndexer(boolean rev) {
@@ -64,31 +68,36 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	public void runShooter() {
 		this.shootAPidController.setReference(MoPrefs.SHOOTER_SETPOINT.get(), CANSparkMax.ControlType.kVelocity, 0);
-		this.shootBPidController.setReference(MoPrefs.SHOOTER_SETPOINT.get(), CANSparkMax.ControlType.kVelocity, 0);
 	}
 
 	public void retractShooter() {
 		this.shooterA.set(-0.2);
-		this.shooterB.set(-0.2);
 	}
 
-	private double calcHoodTarget() {
-		return MoPrefs.HOOD_DISTANCE_TEST.get(); // TODO: use distance
+	private double calcHoodTarget(boolean calc) {
+		return MoPrefs.HOOD_DISTANCE_TEST.get();
+
+		//double x = this.targeting.getTargetDistance();
+		//return Utils.clip(calc ? -1.5 * Math.pow(x - 6, 2) + 37 : 2, 0, 50);
 	}
 
-	public void openHood() {
-		if (!this.hoodFullyOpen()) {
-			this.hood.set(MoPrefs.HOOD_SETPOINT.get());
+	public void openHood(boolean calc) {
+		if (!this.hoodFullyOpen(calc)) {
+			//double range = this.calcHoodTarget(calc);
+			//double offset = Utils.clip(range - this.hood.getEncoder().getPosition(), 0, range);
+			//this.hood.set(Utils.clip(MoUtil.approachedPowerCalc(offset, range, 0.2, 1) * MoPrefs.HOOD_SETPOINT.get(), 0, 1));
+			this.hood.set(0.4);
 		} else {
-			this.hood.stopMotor();
+			this.hood.set(0);
 		}
 	}
 
 	public void closeHood() {
-		if (this.hood.getEncoder().getPosition() > 0) {
-			this.hood.set(-0.5 * MoPrefs.HOOD_SETPOINT.get());
+		if (this.hood.getEncoder().getPosition() > 0.7) {
+			//this.hood.set(-0.2 * MoPrefs.HOOD_SETPOINT.get());
+			this.hood.set(-0.2);
 		} else {
-			this.hood.stopMotor();
+			this.hood.set(0);
 		}
 	}
 
@@ -97,7 +106,7 @@ public class ShooterSubsystem extends SubsystemBase {
 			this.targeting.turnToTarget();
 		}
 
-		this.openHood();
+		this.openHood(doTargeting);
 
 		if (shooterState == State.DEFAULT) {
 			this.shooterState = State.LOADING;
@@ -109,7 +118,7 @@ public class ShooterSubsystem extends SubsystemBase {
 			if (this.fullOfBalls()) {
 				this.retractShooter();
 				this.runIndexer(true);
-			} else if (this.hoodFullyOpen()) {
+			} else if (this.hoodFullyOpen(doTargeting)) {
 				this.shooterState = State.SHOOTING;
 			} else {
 				this.idleIndexer();
@@ -120,6 +129,10 @@ public class ShooterSubsystem extends SubsystemBase {
 			if (this.shooterUpToSpeed() && (this.targeting.isAtTarget() || !doTargeting)) {
 				this.runIndexer(false);
 			} else this.idleIndexer();
+
+			if (!doTargeting) {
+				this.targeting.resetTargetPose();
+			}
 		}
 	}
 
@@ -142,8 +155,9 @@ public class ShooterSubsystem extends SubsystemBase {
 	public void periodic() {
 		SmartDashboard.putNumber("Flywheel Motor A Velocity", shooterAEncoder.getVelocity());
 		SmartDashboard.putNumber("Flywheel Motor B Velocity", shooterBEncoder.getVelocity());
-
+		SmartDashboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
 		SmartDashboard.putString("Shooter State", this.shooterState.name());
+		SmartDashboard.putBoolean("Full of Ball", this.fullOfBalls());
 	
 		if (this.shooterState == State.DEFAULT) {
 			this.closeHood();

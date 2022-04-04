@@ -16,8 +16,10 @@ public class ClimberSubsystem extends SubsystemBase {
 	private final CANSparkMax adjustLeft = new CANSparkMax(Components.CLIMB_ADJUST_L, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax adjustRight = new CANSparkMax(Components.CLIMB_ADJUST_R, CANSparkMaxLowLevel.MotorType.kBrushless);
 
-	private boolean leftReady = false;
-	private boolean rightReady = false;
+	private CalibPhase leftReady = CalibPhase.CALIBRATING;
+	private CalibPhase rightReady = CalibPhase.CALIBRATING;
+	private CalibPhase lAngleReady = CalibPhase.CALIBRATING;
+	private CalibPhase rAngleReady = CalibPhase.CALIBRATING;
 
 	public ClimberSubsystem() {
 	}
@@ -30,41 +32,102 @@ public class ClimberSubsystem extends SubsystemBase {
 		return raiserRight.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
 	}
 
+	public boolean leftAngleLim() {
+		return adjustLeft.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+	}
+
+	public boolean rightAngleLim() {
+		return adjustRight.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+	}
+
 	@Override
 	public void periodic() {
-		if (!leftReady) {
-			raiserLeft.set(-0.4);
+		if (leftReady == CalibPhase.CALIBRATING) {
+			raiserLeft.set(-0.3);
 
 			if (this.leftRaiseLim()) {
-				leftReady = true;
+				leftReady = CalibPhase.RESETTING;
+				raiserLeft.set(0);
+			}
+		} else if (leftReady == CalibPhase.RESETTING) {
+			raiserLeft.set(0.1);
+
+			if (!this.leftRaiseLim()) {
+				leftReady = CalibPhase.READY;
 				raiserLeft.set(0);
 				raiserLeft.getEncoder().setPosition(0);
 			}
 		}
-		if (!rightReady) {
-			raiserRight.set(-0.4);
+		if (rightReady == CalibPhase.CALIBRATING) {
+			raiserRight.set(-0.3);
 
 			if (this.rightRaiseLim()) {
-				rightReady = true;
+				rightReady = CalibPhase.RESETTING;
+				raiserRight.set(0);
+			}
+		} else if (rightReady == CalibPhase.RESETTING) {
+			raiserRight.set(0.1);
+
+			if (!this.rightRaiseLim()) {
+				rightReady = CalibPhase.READY;
 				raiserRight.set(0);
 				raiserRight.getEncoder().setPosition(0);
 			}
 		}
 
+		if (lAngleReady == CalibPhase.CALIBRATING) {
+			adjustLeft.set(0.3);
+
+			if (this.leftAngleLim()) {
+				lAngleReady = CalibPhase.RESETTING;
+				adjustLeft.set(0);
+				adjustLeft.getEncoder().setPosition(MoPrefs.CLIMB_ADJUST_LIM.get());
+			}
+		} else if (lAngleReady == CalibPhase.RESETTING) {
+			adjustLeft.set(-0.2);
+
+			if (adjustLeft.getEncoder().getPosition() <= 0) {
+				lAngleReady = CalibPhase.READY;
+				adjustLeft.set(0);
+			}
+		}
+
+		if (rAngleReady == CalibPhase.CALIBRATING) {
+			adjustRight.set(0.3);
+
+			if (this.rightAngleLim()) {
+				rAngleReady = CalibPhase.RESETTING;
+				adjustRight.set(0);
+				adjustRight.getEncoder().setPosition(MoPrefs.CLIMB_ADJUST_LIM.get());
+			}
+		} else if (rAngleReady == CalibPhase.RESETTING) {
+			adjustRight.set(-0.2);
+
+			if (adjustRight.getEncoder().getPosition() <= 0) {
+				rAngleReady = CalibPhase.READY;
+				adjustRight.set(0);
+			}
+		}
+
 		SmartDashboard.putBoolean("Left Raise Limit", this.leftRaiseLim());
 		SmartDashboard.putBoolean("Right Raise Limit", this.rightRaiseLim());
+		SmartDashboard.putBoolean("Left Angle Limit", this.leftAngleLim());
+		SmartDashboard.putBoolean("Right Angle Limit", this.rightAngleLim());
 
 		SmartDashboard.putNumber("Left Raiser", this.raiserLeft.getEncoder().getPosition());
 		SmartDashboard.putNumber("Right Raiser", this.raiserRight.getEncoder().getPosition());
 		SmartDashboard.putNumber("Left Angle", this.adjustLeft.getEncoder().getPosition());
 		SmartDashboard.putNumber("Right Angle", this.adjustRight.getEncoder().getPosition());
+
+		SmartDashboard.putString("Left Adj State", this.lAngleReady.name());
+		SmartDashboard.putString("Right Adj State", this.rAngleReady.name());
 	}
 
-	public void raise(double power) {
+	public void raiseLeft(double power) {
 		power *= MoPrefs.CLIMBER_RAISE_SETPOINT.get();
 
-		if (leftReady && rightReady) {
-			if ((power > 0 && this.raiserLeft.getEncoder().getPosition() < Constants.CLIMBER_DISTANCE) ||
+		if (leftReady == CalibPhase.READY && rightReady == CalibPhase.READY) {
+			if ((power > 0 && this.raiserLeft.getEncoder().getPosition() < MoPrefs.CLIMB_HEIGHT.get()) ||
 				(power < 0 && this.raiserLeft.getEncoder().getPosition() > 0 && !this.leftRaiseLim())) {
 				this.raiserLeft.set(power);
 			} else {
@@ -74,8 +137,15 @@ public class ClimberSubsystem extends SubsystemBase {
 					this.raiserLeft.getEncoder().setPosition(0);
 				}
 			}
+		}
+	}
 
-			if ((power > 0 && this.raiserRight.getEncoder().getPosition() < Constants.CLIMBER_DISTANCE) ||
+	public void raiseRight(double power) {
+		power *= MoPrefs.CLIMBER_RAISE_SETPOINT.get();
+		this.raiserRight.set(power);
+		
+		if (leftReady == CalibPhase.READY && rightReady == CalibPhase.READY) {
+			if ((power > 0 && this.raiserRight.getEncoder().getPosition() < MoPrefs.CLIMB_HEIGHT.get()) ||
 				(power < 0 && this.raiserRight.getEncoder().getPosition() > 0 && !this.rightRaiseLim())) {
 				this.raiserRight.set(power);
 			} else {
@@ -86,18 +156,6 @@ public class ClimberSubsystem extends SubsystemBase {
 				}
 			}
 		}
-
-		/*
-		if (power > 0) {
-			if (this.raiserLeft.getEncoder().getPosition() < Constants.CLIMBER_DISTANCE) {
-				this.raiserLeft.set(power);
-			} else this.raiserLeft.set(0);
-			
-		} else {
-			if (this.raiserLeft.getEncoder().getPosition() > 0) {
-				this.raiserLeft.set(power);
-			} else this.raiserLeft.set(0);
-		}*/
 	}
 
 	public void idleRaisers() {
@@ -105,10 +163,30 @@ public class ClimberSubsystem extends SubsystemBase {
 		this.raiserRight.set(0);
 	}
 
-	public void adjust(double power) {
+	public void adjustLeft(double power) {
 		power = power * MoPrefs.CLIMBER_ADJUST_SETPOINT.get();
-		this.adjustLeft.set(power);
-		this.adjustRight.set(power);
+		
+		if (lAngleReady == CalibPhase.READY && rAngleReady == CalibPhase.READY) {
+			if ((power > 0 && this.adjustLeft.getEncoder().getPosition() < MoPrefs.CLIMB_ADJUST_MAX.get()) ||
+				(power < 0 && this.adjustLeft.getEncoder().getPosition() > MoPrefs.CLIMB_ADJUST_MIN.get())) {
+				this.adjustLeft.set(power);
+			} else {
+				this.adjustLeft.set(0);
+			}
+		}
+	}
+
+	public void adjustRight(double power) {
+		power = power * MoPrefs.CLIMBER_ADJUST_SETPOINT.get();
+		
+		if (lAngleReady == CalibPhase.READY && rAngleReady == CalibPhase.READY) {
+			if ((power > 0 && this.adjustRight.getEncoder().getPosition() < MoPrefs.CLIMB_ADJUST_MAX.get()) ||
+				(power < 0 && this.adjustRight.getEncoder().getPosition() > MoPrefs.CLIMB_ADJUST_MIN.get())) {
+				this.adjustRight.set(power);
+			} else {
+				this.adjustRight.set(0);
+			}
+		}
 	}
 
 	public void idleAdjustors() {
@@ -121,9 +199,7 @@ public class ClimberSubsystem extends SubsystemBase {
 		this.idleAdjustors();
 	}
 
-	private static boolean isWithinRange(CANSparkMax controller) {
-		double pos = controller.getEncoder().getPosition();
-
-		return pos > 0 && pos < Constants.CLIMBER_DISTANCE;
+	public enum CalibPhase {
+		CALIBRATING, RESETTING, READY;
 	}
 }

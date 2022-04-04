@@ -22,6 +22,17 @@ public final class MoUtil {
 		}
 	}
 
+	public static double approachedPowerCalc(double currentOffset, double range, double minPower, double falloff) {
+		double coefficient = -(minPower / Math.pow(range, 4 * falloff));
+		double polynomial = Math.pow(currentOffset - range, 2 * falloff) * Math.pow(currentOffset + range, 2 * falloff);
+		double result = coefficient * polynomial + 1;
+
+		if (currentOffset < 0) {
+			result *= -1;
+		}
+		return result;
+	}
+
 	public static double wrapAngleDeg(double angle) {
 		angle = angle % 360;
 

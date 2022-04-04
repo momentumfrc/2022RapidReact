@@ -16,12 +16,12 @@ public class AutonomousCommand extends CommandBase {
 
 	@Override
 	public void initialize() {
-		this.robot.targetingSubsystem.resetOrigin();
 	}
 
 	@Override
 	public void execute() {
 		if (this.runtime == null) {
+			this.robot.targetingSubsystem.resetTargetPose();
 			this.runtime = this.robot.autoScriptChooser.getSelectedRuntime();
 		}
 		this.runtime.periodic();

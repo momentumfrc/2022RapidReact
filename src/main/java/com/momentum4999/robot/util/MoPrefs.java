@@ -29,29 +29,31 @@ public class MoPrefs {
 	public static final Pref<Double> INDEXER_SETPOINT = doublePref(
 		"IndexerSetpoint", 1);
 	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
-		"ShooterSetpoint", 4000);
+		"ShooterSetpoint", 4200);
 	public static final Pref<Double> HOOD_SETPOINT = doublePref(
-		"HoodSetpoint", 0.25);
+		"HoodSetpoint", 0.85);
 	public static final Pref<Double> HOOD_DISTANCE_TEST = doublePref(
-		"HoodDistanceTest", 10);
+		"HoodDistanceTest", 18);
 	public static final Pref<Double> CLIMBER_RAISE_SETPOINT = doublePref(
 		"ClimbRaiseSetpoint", 1);
-	public static final Pref<Double> CLIMBER_RAISE_MIN = doublePref(
-		"ClimbRaiseMin", 0);
-	public static final Pref<Double> CLIMBER_RAISE_MAX = doublePref(
-		"ClimbRaiseMax", 100);
 	public static final Pref<Double> CLIMBER_ADJUST_SETPOINT = doublePref(
 		"ClimbAdjustSetpoint", 1);
-	public static final Pref<Double> CLIMBER_ADJUST_MIN = doublePref(
-		"ClimbAdjustMin", 0);
-	public static final Pref<Double> CLIMBER_ADJUST_MAX = doublePref(
-		"ClimbAdjustMax", 100);
+	public static final Pref<Double> CLIMB_HEIGHT = doublePref(
+		"ClimbHeight", 400);
+	public static final Pref<Double> CLIMB_ADJUST_MIN = doublePref(
+		"ClimbAdjustMin", -20);	
+	public static final Pref<Double> CLIMB_ADJUST_MAX = doublePref(
+		"ClimbAdjustMax", 120);
+	public static final Pref<Double> CLIMB_ADJUST_LIM = doublePref(
+		"ClimbAdjustLim", 75);
 	public static final Pref<Double> TARGETING_MIN_PWR = doublePref(
-		"TargetingMinPower", 0.42);
+		"TargetingMinPower", 0.4);
 	public static final Pref<Double> TARGETING_FALLOFF = doublePref(
-		"TargetingFalloff", 6);
+		"TargetingFalloff", 1);
+	public static final Pref<Double> TARGETING_ANGLE_ERROR = doublePref(
+		"TargetingAngleError", 8.5);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
-		"ShooterTargetError", 200);
+		"ShooterTargetError", 480);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
