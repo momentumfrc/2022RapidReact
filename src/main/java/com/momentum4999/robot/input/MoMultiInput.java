@@ -5,13 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.momentum4999.robot.input.InputMapping.InputAxis;
+import com.momentum4999.robot.input.InputMapping.InputButton;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
-public class MoMultiGamepad extends InputDevice {
+public class MoMultiInput extends MoBaseInput {
 	private final List<Entry> gamepads;
 
-	public MoMultiGamepad(Entry entry, Entry ... others) {
+	public MoMultiInput(Entry entry, Entry ... others) {
 		List<Entry> entries = new ArrayList<>(Arrays.asList(others));
 		entries.add(0, entry);
 

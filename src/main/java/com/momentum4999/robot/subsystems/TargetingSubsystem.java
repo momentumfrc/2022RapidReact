@@ -44,7 +44,7 @@ public class TargetingSubsystem extends SubsystemBase {
 
 	public void turnToTarget() {
 		double power = MoUtil.approachedPowerCalc(
-			this.getTargetAngleDifference(), 180, 
+			this.limelight.hOffset, 180, 
 			MoPrefs.TARGETING_MIN_PWR.get(), 
 			MoPrefs.TARGETING_FALLOFF.get());
 
@@ -62,7 +62,8 @@ public class TargetingSubsystem extends SubsystemBase {
 		double angle = MoUtil.wrapAngleDeg(-Math.toDegrees(Math.atan2(-pose.getTranslation().getY(), pose.getTranslation().getX())));
 		double robotAngle = MoUtil.wrapAngleDeg(pose.getRotation().getDegrees());
 		
-		return MoUtil.wrapAngleDeg(robotAngle - angle);
+		//return MoUtil.wrapAngleDeg(robotAngle - angle);
+		return this.limelight.hOffset;
 	}
 
 	public double getTargetDistance() {
@@ -128,7 +129,7 @@ public class TargetingSubsystem extends SubsystemBase {
 	// table, this is a wrapper around that
 	public static class LimelightTableAdapter {
 		private boolean hasTarget = false;
-		private double hOffset = 0;
+		protected double hOffset = 0;
 		private double vOffset = 0;
 		private double targetArea = 0;
 

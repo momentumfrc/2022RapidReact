@@ -3,13 +3,16 @@ package com.momentum4999.robot.input;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.momentum4999.robot.input.InputMapping.InputAxis;
+import com.momentum4999.robot.input.InputMapping.InputButton;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
-public class MoSingleGamepad extends InputDevice {
+public class MoSingleInput extends MoBaseInput {
 	private final GenericHID gamepad;
 
-	public MoSingleGamepad(GenericHID gamepad) {
+	public MoSingleInput(GenericHID gamepad) {
 		this.gamepad = gamepad;
 	}
 	

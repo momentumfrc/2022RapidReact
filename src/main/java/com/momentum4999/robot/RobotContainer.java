@@ -8,10 +8,10 @@ import java.util.Map;
 
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.TeleOpCommand;
-import com.momentum4999.robot.input.InputDevice;
-import com.momentum4999.robot.input.MoMultiGamepad;
-import com.momentum4999.robot.input.InputDevice.InputButton;
-import com.momentum4999.robot.input.InputDevice.JoystickButtonHolder;
+import com.momentum4999.robot.input.MoBaseInput;
+import com.momentum4999.robot.input.MoMultiInput;
+import com.momentum4999.robot.input.InputMapping.InputButton;
+import com.momentum4999.robot.input.MoBaseInput.JoystickButtonHolder;
 import com.momentum4999.robot.subsystems.ClimberSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
@@ -46,7 +46,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
  */
 public class RobotContainer {
 	// Components
-	public final InputDevice gamepad = createGamepad();
+	public final MoBaseInput gamepad = createGamepad();
 	public final PneumaticsControlModule pneumatics = new PneumaticsControlModule();
 	public final PowerDistribution pdp = new PowerDistribution();
 
@@ -148,10 +148,10 @@ public class RobotContainer {
 		this.driveSubsystem.stop();
 	}
 
-	public static InputDevice createGamepad() {
-		return new MoMultiGamepad(
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
-			MoMultiGamepad.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
+	public static MoBaseInput createGamepad() {
+		return new MoMultiInput(
+			MoMultiInput.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
+			MoMultiInput.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
 		);
 		//return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
 	}
