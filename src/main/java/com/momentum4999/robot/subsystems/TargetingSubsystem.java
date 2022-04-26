@@ -93,7 +93,7 @@ public class TargetingSubsystem extends SubsystemBase {
 		Pose2d pose = this.driveSubsystem.getPose();
 		double opposite = Constants.LL_GOAL_HEIGHT_M - Constants.LL_HEIGHT_M;
 		double pitch = Constants.LL_ANGLE_DEG + vAngle;
-		double distance = Math.tan(Math.toRadians(pitch)) / opposite;
+		double distance = opposite / Math.tan(Math.toRadians(pitch));
 		double yaw = MoUtil.wrapAngleDeg(pose.getRotation().getDegrees() - hAngle);
 
 		Translation2d offset = new Translation2d(

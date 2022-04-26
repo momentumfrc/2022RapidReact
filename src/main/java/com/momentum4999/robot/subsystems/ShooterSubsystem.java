@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shooterB.follow(shooterA, true);
 		this.hood.setInverted(true);
 
-		this.shootAPidController.setP(0.00007, 0);
+		this.shootAPidController.setP(0.00008, 0);
 		this.shootAPidController.setFF(0.00018, 0);
 		this.shootBPidController.setP(0.00007, 0);
 		this.shootBPidController.setFF(0.00018, 0);
@@ -162,6 +162,9 @@ public class ShooterSubsystem extends SubsystemBase {
 		if (this.shooterState == State.DEFAULT) {
 			this.closeHood();
 		}
+
+		this.shootAPidController.setP(MoPrefs.SHOOTER_KP.get());
+		this.shootAPidController.setFF(MoPrefs.SHOOTER_KFF.get());
 	}
 
 	public enum State {

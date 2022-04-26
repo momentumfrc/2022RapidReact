@@ -53,7 +53,11 @@ public class MoPrefs {
 	public static final Pref<Double> TARGETING_ANGLE_ERROR = doublePref(
 		"TargetingAngleError", 8.5);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
-		"ShooterTargetError", 480);
+		"ShooterTargetError", 200);
+	public static final Pref<Double> SHOOTER_KP = doublePref(
+		"ShooterkP", 0.00008);
+	public static final Pref<Double> SHOOTER_KFF = doublePref(
+		"ShooterkFF", 0.00018);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
