@@ -8,6 +8,7 @@
   "gyro ctor": "0",
   "is drivetrain": false,
   "motor controllers": [
+    "SPARK MAX (Brushless)",
     "SPARK MAX (Brushless)"
   ],
   "number of samples per average": 1,
@@ -17,9 +18,11 @@
     1
   ],
   "primary motor ports": [
-    1
+    1,
+    2
   ],
   "primary motors inverted": [
+    false,
     false
   ],
   "secondary encoder inverted": false,
@@ -28,9 +31,11 @@
     3
   ],
   "secondary motor ports": [
-    2
+    2,
+    3
   ],
   "secondary motors inverted": [
+    false,
     false
   ],
   "velocity measurement period": 100
