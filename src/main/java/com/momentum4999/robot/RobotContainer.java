@@ -94,12 +94,12 @@ public class RobotContainer {
 		// ---------------------------------- Intake ----------------------------------
 		this.intakeFwd.apply(button -> {
 			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
-				.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem))
+				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
 				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
 		});
 		this.intakeRev.apply(button -> {
 			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
-				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
+				.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem))
 				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
 		});
 				

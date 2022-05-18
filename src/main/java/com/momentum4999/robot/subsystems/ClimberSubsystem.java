@@ -16,10 +16,10 @@ public class ClimberSubsystem extends SubsystemBase {
 	private final CANSparkMax adjustLeft = new CANSparkMax(Components.CLIMB_ADJUST_L, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax adjustRight = new CANSparkMax(Components.CLIMB_ADJUST_R, CANSparkMaxLowLevel.MotorType.kBrushless);
 
-	private CalibPhase leftReady = CalibPhase.CALIBRATING;
-	private CalibPhase rightReady = CalibPhase.CALIBRATING;
-	private CalibPhase lAngleReady = CalibPhase.CALIBRATING;
-	private CalibPhase rAngleReady = CalibPhase.CALIBRATING;
+	private CalibPhase leftReady = CalibPhase.READY;
+	private CalibPhase rightReady = CalibPhase.READY;
+	private CalibPhase lAngleReady = CalibPhase.READY;
+	private CalibPhase rAngleReady = CalibPhase.READY;
 
 	public ClimberSubsystem() {
 	}
