@@ -1,0 +1,19 @@
+{
+    "fileName": "neopixel-leds.json",
+    "name": "Neopixel_LEDs",
+    "version": "1.8",
+    "uuid": "7e31ef33-cc0c-4dd3-8bdd-dae39e2b5d5d",
+    "mavenUrls": [
+        "https://raw.githubusercontent.com/momentumfrc/Momentum-Tools/master/mvn-repo"
+    ],
+    "jsonUrl": "https://raw.githubusercontent.com/momentumfrc/Momentum-Tools/master/json/neopixel-leds.json",
+    "javaDependencies": [
+        {
+            "groupId": "org.usfirst.frc.team4999",
+            "artifactId": "neopixel-leds",
+            "version": "1.8"
+        }
+    ],
+    "jniDependencies": [],
+    "cppDependencies": []
+}

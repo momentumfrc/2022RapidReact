@@ -15,6 +15,7 @@ import com.momentum4999.robot.input.MoBaseInput.JoystickButtonHolder;
 import com.momentum4999.robot.subsystems.ClimberSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.IntakeSubsystem;
+import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.TargetingSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
@@ -70,6 +71,9 @@ public class RobotContainer {
 	// Shuffleboard
 	public final MoShuffleboard shuffleboard = new MoShuffleboard();
 	public final AutoScriptChooser autoScriptChooser;
+
+	// LEDS
+	public final LEDSubsystem leds = new LEDSubsystem();
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
