@@ -23,7 +23,6 @@ public class ShooterSubsystem extends SubsystemBase {
 	private final RelativeEncoder shooterAEncoder = shooterA.getEncoder();
 	private final RelativeEncoder shooterBEncoder = shooterB.getEncoder();
 	private final SparkMaxPIDController shootAPidController = shooterA.getPIDController();
-	private final SparkMaxPIDController shootBPidController = shooterB.getPIDController();
 
 	private final DigitalInput fullSensor = new DigitalInput(Components.SHOOTER_FULL_SENSOR);
 
@@ -39,10 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shooterB.follow(shooterA, true);
 		this.hood.setInverted(true);
 
-		this.shootAPidController.setP(0.00008, 0);
-		this.shootAPidController.setFF(0.00018, 0);
-		this.shootBPidController.setP(0.00007, 0);
-		this.shootBPidController.setFF(0.00018, 0);
+
 	}
 
 	public boolean fullOfBalls() {
@@ -108,14 +104,18 @@ public class ShooterSubsystem extends SubsystemBase {
 
 		this.openHood(doTargeting);
 
+		boolean overrideBallSensor = true;
+
 		if (shooterState == State.DEFAULT) {
 			this.shooterState = State.LOADING;
 		} else if (shooterState == State.LOADING) {
-			if (this.fullOfBalls()) {
+			if (overrideBallSensor || this.fullOfBalls()) {
 				this.shooterState = State.RETRACTING;
 			} else this.runIndexer(false);
 		} else if (shooterState == State.RETRACTING) {
-			if (this.fullOfBalls()) {
+			if (!overrideBallSensor && this.fullOfBalls()) {
+				// Retract ball lower into the bot so we can get the shooter
+				// up to speed unloaded
 				this.retractShooter();
 				this.runIndexer(true);
 			} else if (this.hoodFullyOpen(doTargeting)) {
@@ -163,8 +163,12 @@ public class ShooterSubsystem extends SubsystemBase {
 			this.closeHood();
 		}
 
+		// Shooter B is reversed and set to follow
 		this.shootAPidController.setP(MoPrefs.SHOOTER_KP.get());
+		this.shootAPidController.setI(MoPrefs.SHOOTER_KI.get());
+		this.shootAPidController.setD(MoPrefs.SHOOTER_KD.get());
 		this.shootAPidController.setFF(MoPrefs.SHOOTER_KFF.get());
+		this.shootAPidController.setDFilter(0);
 	}
 
 	public enum State {

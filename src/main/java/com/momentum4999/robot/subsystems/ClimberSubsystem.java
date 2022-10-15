@@ -33,7 +33,7 @@ public class ClimberSubsystem extends SubsystemBase {
 	}
 
 	public boolean leftAngleLim() {
-		return adjustLeft.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+		return adjustLeft.getForwardLimitSwitch(Type.kNormallyOpen).isPressed();
 	}
 
 	public boolean rightAngleLim() {

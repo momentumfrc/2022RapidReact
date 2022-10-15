@@ -55,9 +55,16 @@ public class MoPrefs {
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
 		"ShooterTargetError", 200);
 	public static final Pref<Double> SHOOTER_KP = doublePref(
-		"ShooterkP", 0.0003);
+		"ShooterkP", 0.00008);
+	public static final Pref<Double> SHOOTER_KI = doublePref(
+		"ShooterkI", 0.0003);
+	public static final Pref<Double> SHOOTER_KD = doublePref(
+		"ShooterkD", 0.0003);
 	public static final Pref<Double> SHOOTER_KFF = doublePref(
 		"ShooterkFF", 0.00002935);
+
+	public static final Pref<Double> SHOOT_KIZONE = doublePref(
+		"ShooterIZone", 0.1);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
