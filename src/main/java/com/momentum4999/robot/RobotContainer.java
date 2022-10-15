@@ -87,8 +87,6 @@ public class RobotContainer {
 		MoShuffleboard.matchTab()
 			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
 			.withSize(3, 3).withProperties(Map.of("Show controls", false));
-
-		this.targetingSubsystem.limelight.setLight(false);
 	}
 
 	/**

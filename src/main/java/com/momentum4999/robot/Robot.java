@@ -57,7 +57,9 @@ public class Robot extends TimedRobot {
 	public void disabledInit() {}
 
 	@Override
-	public void disabledPeriodic() {}
+	public void disabledPeriodic() {
+		this.robotContainer.targetingSubsystem.limelight.setLight(false);
+	}
 
 	/** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
 	@Override
