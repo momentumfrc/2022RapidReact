@@ -74,6 +74,10 @@ public class MoPrefs {
 			EntryListenerFlags.kImmediate | EntryListenerFlags.kNew);
 	}
 
+	public boolean hasKey(String key) {
+		return this.table.containsKey(key);
+	}
+
 	public NetworkTableEntry getEntry(String key) {
 		return this.table.getEntry(key);
 	}
@@ -116,7 +120,10 @@ public class MoPrefs {
 		}
 
 		private void init() {
-			this.set(defaultValue);
+			MoPrefs prefs = MoPrefs.get();
+			if(!prefs.hasKey(key)) {
+				this.set(defaultValue);
+			}
 		}
 
 		public T get() {
