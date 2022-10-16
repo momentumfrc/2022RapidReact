@@ -3,6 +3,7 @@ package com.momentum4999.robot.subsystems;
 import com.momentum4999.robot.Constants;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
+import com.momentum4999.robot.util.MoShuffleboard;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxLimitSwitch.Type;
@@ -109,18 +110,18 @@ public class ClimberSubsystem extends SubsystemBase {
 			}
 		}
 
-		SmartDashboard.putBoolean("Left Raise Limit", this.leftRaiseLim());
-		SmartDashboard.putBoolean("Right Raise Limit", this.rightRaiseLim());
-		SmartDashboard.putBoolean("Left Angle Limit", this.leftAngleLim());
-		SmartDashboard.putBoolean("Right Angle Limit", this.rightAngleLim());
+		MoShuffleboard.putBoolean("Left Raise Limit", this.leftRaiseLim());
+		MoShuffleboard.putBoolean("Right Raise Limit", this.rightRaiseLim());
+		MoShuffleboard.putBoolean("Left Angle Limit", this.leftAngleLim());
+		MoShuffleboard.putBoolean("Right Angle Limit", this.rightAngleLim());
 
-		SmartDashboard.putNumber("Left Raiser", this.raiserLeft.getEncoder().getPosition());
-		SmartDashboard.putNumber("Right Raiser", this.raiserRight.getEncoder().getPosition());
-		SmartDashboard.putNumber("Left Angle", this.adjustLeft.getEncoder().getPosition());
-		SmartDashboard.putNumber("Right Angle", this.adjustRight.getEncoder().getPosition());
+		MoShuffleboard.putNumber("Left Raiser", this.raiserLeft.getEncoder().getPosition());
+		MoShuffleboard.putNumber("Right Raiser", this.raiserRight.getEncoder().getPosition());
+		MoShuffleboard.putNumber("Left Angle", this.adjustLeft.getEncoder().getPosition());
+		MoShuffleboard.putNumber("Right Angle", this.adjustRight.getEncoder().getPosition());
 
-		SmartDashboard.putString("Left Adj State", this.lAngleReady.name());
-		SmartDashboard.putString("Right Adj State", this.rAngleReady.name());
+		MoShuffleboard.putString("Left Adj State", this.lAngleReady.name());
+		MoShuffleboard.putString("Right Adj State", this.rAngleReady.name());
 	}
 
 	public void raiseLeft(double power) {

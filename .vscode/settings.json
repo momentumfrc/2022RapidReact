@@ -28,5 +28,7 @@
 	"java.test.defaultConfig": "WPIlibUnitTests",
 	"editor.tabSize": 4,
 	"editor.insertSpaces": false,
-	"editor.detectIndentation": true
+	"editor.detectIndentation": true,
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true
 }

@@ -2,6 +2,7 @@ package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.Constants;
 import com.momentum4999.robot.util.MoPrefs;
+import com.momentum4999.robot.util.MoShuffleboard;
 import com.momentum4999.robot.util.MoUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,7 +11,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class TargetingSubsystem extends SubsystemBase {
@@ -38,7 +38,7 @@ public class TargetingSubsystem extends SubsystemBase {
 			Math.sin(Math.toRadians(yaw))).times(Constants.ROBOT_START_DISTANCE_FROM_GOAL_M);
 		this.targetPose = pose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
 		
-		SmartDashboard.putString("Target Position", this.targetPose.getTranslation().toString());
+		MoShuffleboard.putString("Target Position", this.targetPose.getTranslation().toString());
 		this.hasFirstInit = true;
 	}
 
@@ -80,11 +80,11 @@ public class TargetingSubsystem extends SubsystemBase {
 	public void periodic() {
 		this.limelight.periodic();
 
-		SmartDashboard.putString("Robot Position", this.driveSubsystem.getPose().toString());
-		SmartDashboard.putNumber("Angle to Target", this.getTargetAngleDifference());
-		SmartDashboard.putNumber("Distance to Target", this.getTargetDistance());
+		MoShuffleboard.putString("Robot Position", this.driveSubsystem.getPose().toString());
+		MoShuffleboard.putNumber("Angle to Target", this.getTargetAngleDifference());
+		MoShuffleboard.putNumber("Distance to Target", this.getTargetDistance());
 
-		SmartDashboard.putString("Target Offset Pose", this.getPoseRelativeToTarget().toString());
+		MoShuffleboard.putString("Target Offset Pose", this.getPoseRelativeToTarget().toString());
 
 		this.limelight.ifTarget(this::setTargetFromLimelight);
 	}
@@ -100,9 +100,9 @@ public class TargetingSubsystem extends SubsystemBase {
 			Math.cos(Math.toDegrees(yaw)),
 			Math.sin(Math.toDegrees(yaw))).times(distance + (Constants.GOAL_DIAMETER_M * 0.5));
 		
-		SmartDashboard.putNumber("LL H Angle", hAngle);
-		SmartDashboard.putNumber("LL V Angle", vAngle);
-		SmartDashboard.putNumber("LL Last Dist", distance);
+		MoShuffleboard.putNumber("LL H Angle", hAngle);
+		MoShuffleboard.putNumber("LL V Angle", vAngle);
+		MoShuffleboard.putNumber("LL Last Dist", distance);
 			
 		if (this.lastLLPos == null) {
 			this.lastLLPos = offset;
@@ -117,7 +117,7 @@ public class TargetingSubsystem extends SubsystemBase {
 		if (this.llConfidence > 3) {
 			this.targetPose = pose.plus(new Transform2d(offset, new Rotation2d(0)).inverse());
 			
-			SmartDashboard.putString("Target Position", this.targetPose.getTranslation().toString());
+			MoShuffleboard.putString("Target Position", this.targetPose.getTranslation().toString());
 		}
 	}
 

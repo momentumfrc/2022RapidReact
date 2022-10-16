@@ -5,6 +5,7 @@ import com.momentum4999.robot.RobotConfig;
 import com.momentum4999.robot.input.MoBaseInput;
 import com.momentum4999.robot.input.InputMapping.InputAxis;
 import com.momentum4999.robot.util.Components;
+import com.momentum4999.robot.util.MoShuffleboard;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -62,10 +63,10 @@ public class DriveSubsystem extends SubsystemBase {
 	public void periodic() {
 		this.odometry.update(this.gyro.getRotation2d(), this.leftEncoder.getDistance(), this.rightEncoder.getDistance());
 
-		SmartDashboard.putNumber("Average Distance", this.getAverageDrivenDistance());
-		SmartDashboard.putNumber("Left Distance", this.leftEncoder.getDistance());
-		SmartDashboard.putNumber("Right Distance", this.rightEncoder.getDistance());
-		SmartDashboard.putNumber("Gyro Degrease", this.getPose().getRotation().getDegrees());
+		MoShuffleboard.putNumber("Average Distance", this.getAverageDrivenDistance());
+		MoShuffleboard.putNumber("Left Distance", this.leftEncoder.getDistance());
+		MoShuffleboard.putNumber("Right Distance", this.rightEncoder.getDistance());
+		MoShuffleboard.putNumber("Gyro Degrease", this.getPose().getRotation().getDegrees());
 	}
 
 	public double getAverageDrivenDistance() {

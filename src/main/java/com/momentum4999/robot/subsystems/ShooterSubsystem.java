@@ -2,6 +2,7 @@ package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
+import com.momentum4999.robot.util.MoShuffleboard;
 import com.momentum4999.robot.util.MoUtil;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -153,11 +154,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		SmartDashboard.putNumber("Flywheel Motor A Velocity", shooterAEncoder.getVelocity());
-		SmartDashboard.putNumber("Flywheel Motor B Velocity", shooterBEncoder.getVelocity());
-		SmartDashboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
-		SmartDashboard.putString("Shooter State", this.shooterState.name());
-		SmartDashboard.putBoolean("Full of Ball", this.fullOfBalls());
+		MoShuffleboard.putNumber("Flywheel Motor A Velocity", shooterAEncoder.getVelocity());
+		MoShuffleboard.putNumber("Flywheel Motor B Velocity", shooterBEncoder.getVelocity());
+		MoShuffleboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
+		MoShuffleboard.putString("Shooter State", this.shooterState.name());
+		MoShuffleboard.putBoolean("Full of Ball", this.fullOfBalls());
 	
 		if (this.shooterState == State.DEFAULT) {
 			this.closeHood();

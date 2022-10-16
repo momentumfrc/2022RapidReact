@@ -142,7 +142,7 @@ public class RobotContainer {
 	public void robotPeriodic() {
 		/*
 		for (int i = 0; i < this.pdp.getNumChannels(); i++) {
-			SmartDashboard.putNumber("PDP Channel "+i, this.pdp.getCurrent(i));
+			MoShuffleboard.putNumber("PDP Channel "+i, this.pdp.getCurrent(i));
 		}*/
 	}
 
