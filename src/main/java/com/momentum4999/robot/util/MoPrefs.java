@@ -64,7 +64,7 @@ public class MoPrefs {
 	public static final Pref<Double> SHOOTER_KFF = doublePref(
 		"ShooterkFF", 0.00002935);
 
-	public static final Pref<Double> SHOOT_KIZONE = doublePref(
+	public static final Pref<Double> SHOOTER_KIZONE = doublePref(
 		"ShooterIZone", 0.1);
 
 	public static final Pref<Boolean> CLIMBER_USE_LIMIT_SWITCHES = booleanPref(

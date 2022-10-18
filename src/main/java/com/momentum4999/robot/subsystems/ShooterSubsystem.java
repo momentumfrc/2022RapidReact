@@ -159,7 +159,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		MoShuffleboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
 		MoShuffleboard.putString("Shooter State", this.shooterState.name());
 		MoShuffleboard.putBoolean("Full of Ball", this.fullOfBalls());
-	
+
 		if (this.shooterState == State.DEFAULT) {
 			this.closeHood();
 		}
@@ -169,6 +169,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shootAPidController.setI(MoPrefs.SHOOTER_KI.get());
 		this.shootAPidController.setD(MoPrefs.SHOOTER_KD.get());
 		this.shootAPidController.setFF(MoPrefs.SHOOTER_KFF.get());
+		this.shootAPidController.setIZone(MoPrefs.SHOOTER_KIZONE.get());
 		this.shootAPidController.setDFilter(0);
 	}
 
