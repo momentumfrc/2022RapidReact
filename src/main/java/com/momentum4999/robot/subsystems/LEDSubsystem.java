@@ -1,11 +1,10 @@
 package com.momentum4999.robot.subsystems;
 
-import org.usfirst.frc.team4999.lights.Animator;
+import org.usfirst.frc.team4999.lights.AsyncAnimator;
 import org.usfirst.frc.team4999.lights.Color;
 import org.usfirst.frc.team4999.lights.ColorTools;
 import org.usfirst.frc.team4999.lights.Display;
 import org.usfirst.frc.team4999.lights.NeoPixels;
-import org.usfirst.frc.team4999.lights.SynchronousAnimator;
 import org.usfirst.frc.team4999.lights.animations.*;
 import org.usfirst.frc.team4999.lights.compositor.AnimationCompositor;
 import org.usfirst.frc.team4999.lights.compositor.FullScreenView;
@@ -14,7 +13,7 @@ import edu.wpi.first.wpilibj.I2C.Port;
 
 public class LEDSubsystem {
 	private Display display;
-	private SynchronousAnimator animator;
+	private AsyncAnimator animator;
 	private AnimationCompositor compositor;
 
 	private static final String BASE_ANIMATION_KEY = "BASE_ANIMATION";
@@ -60,13 +59,16 @@ public class LEDSubsystem {
 
 		try {
 			display = NeoPixels.getInstance(Port.kMXP);
-			animator = new SynchronousAnimator(display);
+			animator = new AsyncAnimator(display);
 			compositor = new AnimationCompositor(animator);
 
 			setBaseAnimation(mainAnimation);
 		} catch (Exception e) {
 			e.printStackTrace();
 			compositor = null;
+			if (animator != null) {
+				animator.stopAnimation();
+			}
 			animator = null;
 			display = null;
 		}
@@ -77,12 +79,6 @@ public class LEDSubsystem {
 		if (compositor != null) {
 			compositor.hideView(BASE_ANIMATION_KEY);
 			compositor.showView(BASE_ANIMATION_KEY, new FullScreenView(animation), BASE_ANIMATION_PRIORITY);
-		}
-	}
-
-	public void pumpAnimation() {
-		if(this.animator != null) {
-			this.animator.animatePeriodic();
 		}
 	}
 
