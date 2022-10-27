@@ -21,8 +21,6 @@ public final class Components {
 	public static final int HOOD = 8;
 	public static final int CLIMB_RAISE_L = 3;
 	public static final int CLIMB_RAISE_R = 4;
-	public static final int CLIMB_ADJUST_L = 5;
-	public static final int CLIMB_ADJUST_R = 6;
 
 	public static final int CLIMB_RAISE_L_PDP = 2;
 	public static final int CLIMB_RAISE_R_PDP = 3;
