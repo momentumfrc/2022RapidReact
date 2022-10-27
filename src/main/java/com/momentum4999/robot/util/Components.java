@@ -1,7 +1,7 @@
 package com.momentum4999.robot.util;
 
 /**
- * Utility class containing constants relevant to 
+ * Utility class containing constants relevant to
  * components onboard the robot, such as ports
  */
 public final class Components {
@@ -23,6 +23,9 @@ public final class Components {
 	public static final int CLIMB_RAISE_R = 4;
 	public static final int CLIMB_ADJUST_L = 5;
 	public static final int CLIMB_ADJUST_R = 6;
+
+	public static final int CLIMB_RAISE_L_PDP = 2;
+	public static final int CLIMB_RAISE_R_PDP = 3;
 
 	public static final int LOGITECH_F310_PORT = 1;
 }

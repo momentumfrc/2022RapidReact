@@ -62,7 +62,7 @@ public class RobotContainer {
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
 	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
-	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(pdp);
 
 	// Commands
 	private final TeleOpCommand teleOpCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.climberSubsystem, this.gamepad);
@@ -82,7 +82,7 @@ public class RobotContainer {
 		MoCode.INSTANCE.loadScripts(this);
 
 		configureButtonBindings();
-		
+
 		this.autoScriptChooser = new AutoScriptChooser(this); // Auto scripts need to be loaded before this is initialized
 		MoShuffleboard.matchTab()
 			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
@@ -104,16 +104,16 @@ public class RobotContainer {
 				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
 				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
 		});
-				
+
 		// ---------------------------------- Shooter ---------------------------------
 		this.shoot.apply(button -> {
-			button.whenPressed(new InstantCommand(() -> 
+			button.whenPressed(new InstantCommand(() ->
 					this.targetingSubsystem.limelight.setLight(true)))
 				.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
 		});
 		this.shootNoTarget.apply(button -> {
-			button.whenPressed(new InstantCommand(() -> 
+			button.whenPressed(new InstantCommand(() ->
 					this.targetingSubsystem.limelight.setLight(true)))
 				.whenHeld(new RunCommand(this::shootWithoutTargeting, this.shooterSubsystem))
 				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));

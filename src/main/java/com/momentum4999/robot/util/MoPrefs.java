@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
@@ -41,7 +42,7 @@ public class MoPrefs {
 	public static final Pref<Double> CLIMB_HEIGHT = doublePref(
 		"ClimbHeight", 400);
 	public static final Pref<Double> CLIMB_ADJUST_MIN = doublePref(
-		"ClimbAdjustMin", -20);	
+		"ClimbAdjustMin", -20);
 	public static final Pref<Double> CLIMB_ADJUST_MAX = doublePref(
 		"ClimbAdjustMax", 120);
 	public static final Pref<Double> CLIMB_ADJUST_LIM = doublePref(
@@ -65,12 +66,19 @@ public class MoPrefs {
 
 	public static final Pref<Double> SHOOT_KIZONE = doublePref(
 		"ShooterIZone", 0.1);
+
+	public static final Pref<Boolean> CLIMBER_USE_LIMIT_SWITCHES = booleanPref(
+		"ClimberUseLimitSwitches", false);
+	public static final Pref<Double> CLIMBER_LIMIT_CURRENT = doublePref(
+		"ClimberLimitCurrent", 80);
+	public static final Pref<Double> CLIMBER_LIMIT_TIME = doublePref(
+		"ClimberLimitTime", 0.25);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
 		this.table = NetworkTableInstance.getDefault().getTable(tableKey);
 		this.table.getEntry(".type").setString("RobotPreferences");
-		this.table.addEntryListener((table, key, entry, value, flags) -> entry.setPersistent(), 
+		this.table.addEntryListener((table, key, entry, value, flags) -> entry.setPersistent(),
 			EntryListenerFlags.kImmediate | EntryListenerFlags.kNew);
 	}
 
@@ -109,7 +117,7 @@ public class MoPrefs {
 		// A function that sets this pref's value within a NetworkTableEntry
 		private final BiConsumer<NetworkTableEntry, T> setter;
 
-		public Pref(String key, T defaultValue, 
+		public Pref(String key, T defaultValue,
 					BiFunction<NetworkTableEntry, T, T> getter, BiConsumer<NetworkTableEntry, T> setter) {
 			this.key = key;
 			this.defaultValue = defaultValue;
@@ -135,6 +143,13 @@ public class MoPrefs {
 			MoPrefs prefs = MoPrefs.get();
 			this.setter.accept(prefs.getEntry(this.key), value);
 		}
+
+		public int subscribe(Consumer<T> consumer) {
+			MoPrefs prefs = MoPrefs.get();
+			NetworkTableEntry entry = prefs.getEntry(this.key);
+			return entry.addListener(notification -> consumer.accept((T) notification.value.getValue()),
+				EntryListenerFlags.kImmediate | EntryListenerFlags.kLocal | EntryListenerFlags.kUpdate);
+		}
 	}
 
 	private static Pref<String> stringPref(String key, String defaultVal) {
@@ -143,5 +158,9 @@ public class MoPrefs {
 
 	private static Pref<Double> doublePref(String key, double defaultVal) {
 		return new Pref<>(key, defaultVal, NetworkTableEntry::getDouble, NetworkTableEntry::setDouble);
+	}
+
+	private static Pref<Boolean> booleanPref(String key, boolean defaultVal) {
+		return new Pref<>(key, defaultVal, NetworkTableEntry::getBoolean, NetworkTableEntry::setBoolean);
 	}
 }

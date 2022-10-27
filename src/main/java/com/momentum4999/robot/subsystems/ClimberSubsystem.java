@@ -1,6 +1,6 @@
 package com.momentum4999.robot.subsystems;
 
-import com.momentum4999.robot.Constants;
+import com.momentum4999.robot.triggers.OvercurrentTrigger;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
 import com.momentum4999.robot.util.MoShuffleboard;
@@ -8,7 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxLimitSwitch.Type;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
@@ -17,20 +17,46 @@ public class ClimberSubsystem extends SubsystemBase {
 	private final CANSparkMax adjustLeft = new CANSparkMax(Components.CLIMB_ADJUST_L, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax adjustRight = new CANSparkMax(Components.CLIMB_ADJUST_R, CANSparkMaxLowLevel.MotorType.kBrushless);
 
+	private final OvercurrentTrigger raiserLeftCurrentTrigger;
+	private final OvercurrentTrigger raiserRightCurrentTrigger;
+
 	private CalibPhase leftReady = CalibPhase.READY;
 	private CalibPhase rightReady = CalibPhase.READY;
 	private CalibPhase lAngleReady = CalibPhase.READY;
 	private CalibPhase rAngleReady = CalibPhase.READY;
 
-	public ClimberSubsystem() {
+	public ClimberSubsystem(PowerDistribution pdp) {
+		double currentLimit = MoPrefs.CLIMBER_LIMIT_CURRENT.get();
+		double currentCutoffTime = MoPrefs.CLIMBER_LIMIT_TIME.get();
+
+		raiserLeftCurrentTrigger = OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_L_PDP);
+		raiserRightCurrentTrigger = OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_R_PDP);
+
+		MoPrefs.CLIMBER_LIMIT_CURRENT.subscribe(current -> {
+			raiserLeftCurrentTrigger.setCurrentLimit(current);
+			raiserRightCurrentTrigger.setCurrentLimit(current);
+		});
+
+		MoPrefs.CLIMBER_LIMIT_TIME.subscribe(time -> {
+			raiserLeftCurrentTrigger.setCutoffTime(time);
+			raiserRightCurrentTrigger.setCutoffTime(time);
+		});
 	}
 
 	public boolean leftRaiseLim() {
-		return raiserLeft.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+		if(MoPrefs.CLIMBER_USE_LIMIT_SWITCHES.get()) {
+			return raiserLeft.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+		} else {
+			return raiserLeftCurrentTrigger.get();
+		}
 	}
 
 	public boolean rightRaiseLim() {
-		return raiserRight.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+		if(MoPrefs.CLIMBER_USE_LIMIT_SWITCHES.get()) {
+			return raiserRight.getReverseLimitSwitch(Type.kNormallyOpen).isPressed();
+		} else {
+			return raiserRightCurrentTrigger.get();
+		}
 	}
 
 	public boolean leftAngleLim() {
@@ -144,7 +170,7 @@ public class ClimberSubsystem extends SubsystemBase {
 	public void raiseRight(double power) {
 		power *= MoPrefs.CLIMBER_RAISE_SETPOINT.get();
 		this.raiserRight.set(power);
-		
+
 		if (leftReady == CalibPhase.READY && rightReady == CalibPhase.READY) {
 			if ((power > 0 && this.raiserRight.getEncoder().getPosition() < MoPrefs.CLIMB_HEIGHT.get()) ||
 				(power < 0 && this.raiserRight.getEncoder().getPosition() > 0 && !this.rightRaiseLim())) {
@@ -166,7 +192,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
 	public void adjustLeft(double power) {
 		power = power * MoPrefs.CLIMBER_ADJUST_SETPOINT.get();
-		
+
 		if (lAngleReady == CalibPhase.READY && rAngleReady == CalibPhase.READY) {
 			if ((power > 0 && this.adjustLeft.getEncoder().getPosition() < MoPrefs.CLIMB_ADJUST_MAX.get()) ||
 				(power < 0 && this.adjustLeft.getEncoder().getPosition() > MoPrefs.CLIMB_ADJUST_MIN.get())) {
@@ -179,7 +205,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
 	public void adjustRight(double power) {
 		power = power * MoPrefs.CLIMBER_ADJUST_SETPOINT.get();
-		
+
 		if (lAngleReady == CalibPhase.READY && rAngleReady == CalibPhase.READY) {
 			if ((power > 0 && this.adjustRight.getEncoder().getPosition() < MoPrefs.CLIMB_ADJUST_MAX.get()) ||
 				(power < 0 && this.adjustRight.getEncoder().getPosition() > MoPrefs.CLIMB_ADJUST_MIN.get())) {
