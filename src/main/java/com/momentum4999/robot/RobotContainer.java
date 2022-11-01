@@ -8,6 +8,8 @@ import java.util.Map;
 
 import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.RunClimberCommand;
+import com.momentum4999.robot.commands.ShooterActiveCommand;
+import com.momentum4999.robot.commands.ShooterIdleCommand;
 import com.momentum4999.robot.commands.TeleOpCommand;
 import com.momentum4999.robot.commands.ZeroClimberCommand;
 import com.momentum4999.robot.input.MoBaseInput;
@@ -24,7 +26,6 @@ import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoCode;
 import com.momentum4999.robot.util.MoShuffleboard;
-import com.momentum4999.robot.util.MoUtil;
 import com.momentum4999.robot.widgets.AutoScriptChooser;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
@@ -33,7 +34,6 @@ import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -69,6 +69,10 @@ public class RobotContainer {
 	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(pdp);
 
 	// Commands
+	private final Command shooterIdleCommand = new ShooterIdleCommand(shooterSubsystem);
+	private final Command shooterActiveNoTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false);
+	private final Command shooterActiveWithTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, true);
+
 	private final TeleOpCommand driveCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
 	private final Command intakeCommand = new SequentialCommandGroup(
 		new ZeroClimberCommand(climberSubsystem, pdp),
@@ -90,12 +94,17 @@ public class RobotContainer {
 	public RobotContainer() {
 		MoCode.INSTANCE.loadScripts(this);
 
+		configureDefaultCommands();
 		configureButtonBindings();
 
 		this.autoScriptChooser = new AutoScriptChooser(this); // Auto scripts need to be loaded before this is initialized
 		MoShuffleboard.matchTab()
 			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
 			.withSize(3, 3).withProperties(Map.of("Show controls", false));
+	}
+
+	private void configureDefaultCommands() {
+		shooterSubsystem.setDefaultCommand(shooterIdleCommand);
 	}
 
 	/**
@@ -115,18 +124,8 @@ public class RobotContainer {
 		});
 
 		// ---------------------------------- Shooter ---------------------------------
-		this.shoot.apply(button -> {
-			button.whenPressed(new InstantCommand(() ->
-					this.targetingSubsystem.limelight.setLight(true)))
-				.whenHeld(new RunCommand(this::shoot, this.shooterSubsystem))
-				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
-		});
-		this.shootNoTarget.apply(button -> {
-			button.whenPressed(new InstantCommand(() ->
-					this.targetingSubsystem.limelight.setLight(true)))
-				.whenHeld(new RunCommand(this::shootWithoutTargeting, this.shooterSubsystem))
-				.whenReleased(new InstantCommand(this::stopShooting, this.shooterSubsystem));
-		});
+		this.shoot.apply(button -> button.whenHeld(shooterActiveWithTargetingCommand));
+		this.shootNoTarget.apply(button -> button.whenHeld(shooterActiveNoTargetingCommand));
 	}
 
 	/**
@@ -186,18 +185,4 @@ public class RobotContainer {
 
 		this.intakeSubsystem.runIntake(rev);
 	}
-
-	public void shoot() {
-		this.shooterSubsystem.runActive(true);
-	}
-
-	public void shootWithoutTargeting() {
-		this.shooterSubsystem.runActive(false);
-	}
-
-	public void stopShooting() {
-		this.shooterSubsystem.stop();
-		this.targetingSubsystem.limelight.setLight(false);
-	}
-
 }

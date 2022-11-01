@@ -19,7 +19,7 @@ public class ShooterSubsystem extends SubsystemBase {
 	private final CANSparkMax indexer = new CANSparkMax(Components.INDEXER, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax shooterA = new CANSparkMax(Components.SHOOTER_A, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final CANSparkMax shooterB = new CANSparkMax(Components.SHOOTER_B, CANSparkMaxLowLevel.MotorType.kBrushless);
-	private final CANSparkMax hood = new CANSparkMax(Components.HOOD, CANSparkMaxLowLevel.MotorType.kBrushless);
+	public final CANSparkMax hood = new CANSparkMax(Components.HOOD, CANSparkMaxLowLevel.MotorType.kBrushless);
 
 	private final RelativeEncoder shooterAEncoder = shooterA.getEncoder();
 	private final RelativeEncoder shooterBEncoder = shooterB.getEncoder();
@@ -38,8 +38,6 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shooterB.setInverted(true);
 		this.shooterB.follow(shooterA, true);
 		this.hood.setInverted(true);
-
-
 	}
 
 	public boolean fullOfBalls() {
@@ -84,15 +82,6 @@ public class ShooterSubsystem extends SubsystemBase {
 			//double offset = Utils.clip(range - this.hood.getEncoder().getPosition(), 0, range);
 			//this.hood.set(Utils.clip(MoUtil.approachedPowerCalc(offset, range, 0.2, 1) * MoPrefs.HOOD_SETPOINT.get(), 0, 1));
 			this.hood.set(0.4);
-		} else {
-			this.hood.set(0);
-		}
-	}
-
-	public void closeHood() {
-		if (this.hood.getEncoder().getPosition() > 0.7) {
-			//this.hood.set(-0.2 * MoPrefs.HOOD_SETPOINT.get());
-			this.hood.set(-0.2);
 		} else {
 			this.hood.set(0);
 		}
@@ -159,10 +148,6 @@ public class ShooterSubsystem extends SubsystemBase {
 		MoShuffleboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
 		MoShuffleboard.putString("Shooter State", this.shooterState.name());
 		MoShuffleboard.putBoolean("Full of Ball", this.fullOfBalls());
-
-		if (this.shooterState == State.DEFAULT) {
-			this.closeHood();
-		}
 
 		// Shooter B is reversed and set to follow
 		this.shootAPidController.setP(MoPrefs.SHOOTER_KP.get());

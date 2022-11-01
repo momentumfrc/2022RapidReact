@@ -17,20 +17,20 @@ import com.momentum4999.robot.RobotContainer;
 import org.usfirst.frc.team4999.utils.Utils;
 
 /**
- * A compiler for MoCode, which can be used to write very 
+ * A compiler for MoCode, which can be used to write very
  * simple robot procedures in a human readable format.
- * 
+ *
  * <p>The language is designed so that individuals with no experience
  * using the language can both read and make edits to code written
  * in it.
- * 
+ *
  * <p>An example of MoCode:
- * 
+ *
  * <p>wait 1 second
  * <p>drive forward 3 seconds
  * <p>wait 0.5 seconds
  * <p>turn left 1 second=
- * 
+ *
  */
 public class MoCode {
 	public static final MoCode INSTANCE = new MoCode()
@@ -40,7 +40,7 @@ public class MoCode {
 		.withStep("set", SetPowerStep::new)
 		.withStep("intake", IntakeStep::new)
 		.withStep("shoot", ShootStep::new);
-	
+
 	private final Map<String, Function<String[], Step>> steps = new HashMap<>();
 
 	private final Map<String, MoCodeRuntime> loadedScripts = new HashMap<>();
@@ -48,7 +48,7 @@ public class MoCode {
 
 	/**
 	 * Add a type of MoCode step to this compiler
-	 * 
+	 *
 	 * @param name The name of the step to be used in MoCode
 	 * @param step A {@link Step} constructor
 	 * @return this MoCode instance to allow more method chaining
@@ -77,15 +77,15 @@ public class MoCode {
 
 	/**
 	 * Compiles MoCode source code into a runnable function.
-	 * 
+	 *
 	 * <p>The resulting {@link MoCodeRuntime} must be updated periodically to run its contained command steps.
-	 * 
+	 *
 	 * @param source The MoCode source code
 	 * @return a runtime that can run the compiled code
 	 */
 	public MoCodeRuntime compile(RobotContainer robot, String source) {
 		String[] lines = source.split("\n");
-		
+
 		List<Step> compiledSteps = new ArrayList<>();
 
 		for (String line : lines) {
@@ -154,7 +154,7 @@ public class MoCode {
 
 				// Run the current command and check if terminated
 				boolean run = this.toExecute.peekFirst().execute(this);
-								
+
 				if (!run) {
 					// If terminated, remove running command
 					this.toExecute.removeFirst();
@@ -182,7 +182,7 @@ public class MoCode {
 	 */
 	public static class LineValidator {
 		private final List<Predicate<String>> tokenValidators = new ArrayList<>();
-		
+
 		public LineValidator() {}
 
 		public LineValidator literal(String ... choices) {
@@ -363,7 +363,7 @@ public class MoCode {
 				}
 			}
 			runtime.robot.driveSubsystem.driveDirect(0, 0);
-			
+
 			return false;
 		}
 	}
@@ -450,11 +450,11 @@ public class MoCode {
 			int timeMillis = (int) (this.time * 1000);
 
 			if (runtime.commandRunTime() < timeMillis) {
-				runtime.robot.shootWithoutTargeting();
+				runtime.robot.shooterSubsystem.runActive(false);
 
 				return true;
 			}
-			runtime.robot.stopShooting();
+			runtime.robot.shooterSubsystem.stop();
 
 			return false;
 		}
