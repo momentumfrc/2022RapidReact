@@ -61,11 +61,11 @@ public class MoShuffleboard {
 		directives.put("Right Raiser",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
 						.withPosition(1, 1)));
-		directives.put("Left CalibPhase",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
+		directives.put("Left Has Zero",
+				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
 						.withPosition(0, 2)));
-		directives.put("Right CalibPhase",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
+		directives.put("Right HasZero",
+				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
 						.withPosition(1, 2)));
 
 		// Drive
