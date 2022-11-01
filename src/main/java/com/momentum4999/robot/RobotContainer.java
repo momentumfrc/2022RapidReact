@@ -7,7 +7,9 @@ package com.momentum4999.robot;
 import java.util.Map;
 
 import com.momentum4999.robot.commands.AutonomousCommand;
+import com.momentum4999.robot.commands.RunClimberCommand;
 import com.momentum4999.robot.commands.TeleOpCommand;
+import com.momentum4999.robot.commands.ZeroClimberCommand;
 import com.momentum4999.robot.input.MoBaseInput;
 import com.momentum4999.robot.input.MoMultiInput;
 import com.momentum4999.robot.input.InputMapping.InputButton;
@@ -34,7 +36,9 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -65,7 +69,12 @@ public class RobotContainer {
 	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(pdp);
 
 	// Commands
-	private final TeleOpCommand teleOpCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.climberSubsystem, this.gamepad);
+	private final TeleOpCommand driveCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
+	private final Command intakeCommand = new SequentialCommandGroup(
+		new ZeroClimberCommand(climberSubsystem, pdp),
+		new RunClimberCommand(climberSubsystem, this.gamepad)
+	);
+	private final Command teleOpCommand = new ParallelCommandGroup(driveCommand, intakeCommand);
 	private final AutonomousCommand autoCommand = new AutonomousCommand(this);
 
 	// Shuffleboard

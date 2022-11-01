@@ -55,30 +55,18 @@ public class MoShuffleboard {
 		directives.put("Right Raise Limit",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
 						.withPosition(1, 0)));
-		directives.put("Left Angle Limit",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(0, 1)));
-		directives.put("Right Angle Limit",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(1, 1)));
 		directives.put("Left Raiser",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(0, 2)));
+						.withPosition(0, 1)));
 		directives.put("Right Raiser",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
+						.withPosition(1, 1)));
+		directives.put("Left CalibPhase",
+				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
+						.withPosition(0, 2)));
+		directives.put("Right CalibPhase",
+				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
 						.withPosition(1, 2)));
-		directives.put("Left Angle",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(0, 3)));
-		directives.put("Right Angle",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(1, 3)));
-		directives.put("Left Adj State",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(0, 4)));
-		directives.put("Right Adj State",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(1, 4)));
 
 		// Drive
 		ShuffleboardLayout driveLayout = Shuffleboard.getTab("MoSystems").getLayout("Drive", BuiltInLayouts.kGrid)

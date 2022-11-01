@@ -12,17 +12,21 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
-	private final CANSparkMax raiserLeft = new CANSparkMax(Components.CLIMB_RAISE_L, CANSparkMaxLowLevel.MotorType.kBrushless);
-	private final CANSparkMax raiserRight = new CANSparkMax(Components.CLIMB_RAISE_R, CANSparkMaxLowLevel.MotorType.kBrushless);
+	public final CANSparkMax raiserLeft = new CANSparkMax(Components.CLIMB_RAISE_L, CANSparkMaxLowLevel.MotorType.kBrushless);
+	public final CANSparkMax raiserRight = new CANSparkMax(Components.CLIMB_RAISE_R, CANSparkMaxLowLevel.MotorType.kBrushless);
 	private final OvercurrentTrigger raiserLeftCurrentTrigger;
 	private final OvercurrentTrigger raiserRightCurrentTrigger;
 
-	private CalibPhase leftReady = CalibPhase.READY;
-	private CalibPhase rightReady = CalibPhase.READY;
+	public CalibPhase leftReady = CalibPhase.CALIBRATING;
+	public CalibPhase rightReady = CalibPhase.CALIBRATING;
+
+	private final PowerDistribution pdp;
 
 	public ClimberSubsystem(PowerDistribution pdp) {
 		double currentLimit = MoPrefs.CLIMBER_LIMIT_CURRENT.get();
 		double currentCutoffTime = MoPrefs.CLIMBER_LIMIT_TIME.get();
+
+		this.pdp = pdp;
 
 		raiserLeftCurrentTrigger = OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_L_PDP);
 		raiserRightCurrentTrigger = OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_R_PDP);
@@ -56,79 +60,86 @@ public class ClimberSubsystem extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		if (leftReady == CalibPhase.CALIBRATING) {
-			raiserLeft.set(-0.3);
-
-			if (this.leftRaiseLim()) {
-				leftReady = CalibPhase.RESETTING;
-				raiserLeft.set(0);
-			}
-		} else if (leftReady == CalibPhase.RESETTING) {
-			raiserLeft.set(0.1);
-
-			if (!this.leftRaiseLim()) {
-				leftReady = CalibPhase.READY;
-				raiserLeft.set(0);
-				raiserLeft.getEncoder().setPosition(0);
-			}
-		}
-		if (rightReady == CalibPhase.CALIBRATING) {
-			raiserRight.set(-0.3);
-
-			if (this.rightRaiseLim()) {
-				rightReady = CalibPhase.RESETTING;
-				raiserRight.set(0);
-			}
-		} else if (rightReady == CalibPhase.RESETTING) {
-			raiserRight.set(0.1);
-
-			if (!this.rightRaiseLim()) {
-				rightReady = CalibPhase.READY;
-				raiserRight.set(0);
-				raiserRight.getEncoder().setPosition(0);
-			}
-		}
-
 		MoShuffleboard.putBoolean("Left Raise Limit", this.leftRaiseLim());
 		MoShuffleboard.putBoolean("Right Raise Limit", this.rightRaiseLim());
 
+		MoShuffleboard.putString("Left CalibPhase", leftReady.toString());
+		MoShuffleboard.putString("Right CalibPhase", rightReady.toString());
+
 		MoShuffleboard.putNumber("Left Raiser", this.raiserLeft.getEncoder().getPosition());
 		MoShuffleboard.putNumber("Right Raiser", this.raiserRight.getEncoder().getPosition());
+
+		MoShuffleboard.putNumber("Left Raiser Current", this.pdp.getCurrent(Components.CLIMB_RAISE_L_PDP));
 	}
 
 	public void raiseLeft(double power) {
 		power *= MoPrefs.CLIMBER_RAISE_SETPOINT.get();
 
-		if (leftReady == CalibPhase.READY && rightReady == CalibPhase.READY) {
-			if ((power > 0 && this.raiserLeft.getEncoder().getPosition() < MoPrefs.CLIMB_HEIGHT.get()) ||
-				(power < 0 && this.raiserLeft.getEncoder().getPosition() > 0 && !this.leftRaiseLim())) {
-				this.raiserLeft.set(power);
-			} else {
-				this.raiserLeft.set(0);
+		if(leftReady != CalibPhase.READY) {
+			// If we don't have a reliable zero, ignore any logic based on encoders
+			this.raiserLeft.set(power);
 
-				if (this.leftRaiseLim()) {
-					this.raiserLeft.getEncoder().setPosition(0);
-				}
+			if(leftRaiseLim()) {
+				this.raiserLeft.getEncoder().setPosition(0);
+				leftReady = CalibPhase.READY;
 			}
+
+			return;
 		}
+
+		if(power > 0 && this.raiserLeft.getEncoder().getPosition() >= MoPrefs.CLIMB_HEIGHT.get()) {
+			this.raiserLeft.set(0);
+			return;
+		}
+
+		if(power < 0 && leftRaiseLim()) {
+			this.raiserLeft.getEncoder().setPosition(0);
+			this.raiserLeft.set(0);
+			return;
+		}
+
+
+		if(power < 0 && this.raiserLeft.getEncoder().getPosition() < 0) {
+			this.raiserLeft.set(0);
+			return;
+		}
+
+		this.raiserLeft.set(power);
 	}
 
 	public void raiseRight(double power) {
 		power *= MoPrefs.CLIMBER_RAISE_SETPOINT.get();
-		this.raiserRight.set(power);
 
-		if (leftReady == CalibPhase.READY && rightReady == CalibPhase.READY) {
-			if ((power > 0 && this.raiserRight.getEncoder().getPosition() < MoPrefs.CLIMB_HEIGHT.get()) ||
-				(power < 0 && this.raiserRight.getEncoder().getPosition() > 0 && !this.rightRaiseLim())) {
-				this.raiserRight.set(power);
-			} else {
-				this.raiserRight.set(0);
+		if(rightReady != CalibPhase.READY) {
+			// If we don't have a reliable zero, ignore any logic based on encoders
+			this.raiserRight.set(power);
 
-				if (this.rightRaiseLim()) {
-					this.raiserRight.getEncoder().setPosition(0);
-				}
+			if(rightRaiseLim()) {
+				this.raiserRight.getEncoder().setPosition(0);
+				rightReady = CalibPhase.READY;
 			}
+
+			return;
 		}
+
+		if(power > 0 && this.raiserRight.getEncoder().getPosition() >= MoPrefs.CLIMB_HEIGHT.get()) {
+			this.raiserRight.set(0);
+			return;
+		}
+
+		if(power < 0 && rightRaiseLim()) {
+			this.raiserRight.getEncoder().setPosition(0);
+			this.raiserRight.set(0);
+			return;
+		}
+
+
+		if(power < 0 && this.raiserRight.getEncoder().getPosition() < 0) {
+			this.raiserRight.set(0);
+			return;
+		}
+
+		this.raiserRight.set(power);
 	}
 
 	public void stop() {
