@@ -10,7 +10,7 @@ import com.momentum4999.robot.commands.AutonomousCommand;
 import com.momentum4999.robot.commands.RunClimberCommand;
 import com.momentum4999.robot.commands.ShooterActiveCommand;
 import com.momentum4999.robot.commands.ShooterIdleCommand;
-import com.momentum4999.robot.commands.TeleOpCommand;
+import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ZeroClimberCommand;
 import com.momentum4999.robot.input.MoBaseInput;
 import com.momentum4999.robot.input.MoMultiInput;
@@ -73,7 +73,7 @@ public class RobotContainer {
 	private final Command shooterActiveNoTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false);
 	private final Command shooterActiveWithTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, true);
 
-	private final TeleOpCommand driveCommand = new TeleOpCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
+	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
 	private final Command intakeCommand = new SequentialCommandGroup(
 		new ZeroClimberCommand(climberSubsystem, pdp),
 		new RunClimberCommand(climberSubsystem, this.gamepad)

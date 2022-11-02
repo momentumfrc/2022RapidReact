@@ -6,12 +6,12 @@ import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-public class TeleOpCommand extends CommandBase {
+public class DriveCommand extends CommandBase {
 	private final DriveSubsystem drive;
 	private final MoBaseInput input;
 	private final Mode driveMode;
 
-	public TeleOpCommand(Mode driveMode, DriveSubsystem drive, MoBaseInput input) {
+	public DriveCommand(Mode driveMode, DriveSubsystem drive, MoBaseInput input) {
 		this.drive = drive;
 		this.input = input;
 		this.driveMode = driveMode;
