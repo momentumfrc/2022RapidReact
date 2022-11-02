@@ -43,11 +43,6 @@ public class ClimberSubsystem extends SubsystemBase {
 				// If we don't have a reliable zero, ignore any logic based on encoders
 				raiser.set(power);
 
-				if(raiseLim()) {
-					raiser.getEncoder().setPosition(0);
-					hasZero = true;
-				}
-
 				return;
 			}
 
@@ -55,13 +50,6 @@ public class ClimberSubsystem extends SubsystemBase {
 				raiser.set(0);
 				return;
 			}
-
-			if(power < 0 && raiseLim()) {
-				raiser.getEncoder().setPosition(0);
-				raiser.set(0);
-				return;
-			}
-
 
 			if(power < 0 && raiser.getEncoder().getPosition() < 0) {
 				raiser.set(0);
