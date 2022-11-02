@@ -6,26 +6,38 @@ import com.momentum4999.robot.util.MoPrefs;
 import com.momentum4999.robot.util.MoShuffleboard;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxLimitSwitch.Type;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ClimberSubsystem extends SubsystemBase {
 
+	private static final int CLIMBER_MAX_RPM = 4500;
+
 	public static class ClimberSide {
 		public final CANSparkMax raiser;
+		public final SparkMaxPIDController raiserPid;
 		public final Trigger trigger;
 		private boolean hasZero = false;
 
 		public ClimberSide(CANSparkMax raiser, Trigger trigger) {
 			this.raiser = raiser;
+			this.raiserPid = raiser.getPIDController();
 			this.trigger = trigger;
 		}
 
 		public boolean getHasZero() {
 			return hasZero;
+		}
+
+		private void set(double power) {
+			if(MoPrefs.CLIMBER_USE_PID.get()) {
+				raiserPid.setReference(power * CLIMBER_MAX_RPM, CANSparkMax.ControlType.kVelocity);
+			} else {
+				raiserPid.setReference(power, CANSparkMax.ControlType.kDutyCycle);
+			}
 		}
 
 		public boolean raiseLim() {
@@ -41,22 +53,22 @@ public class ClimberSubsystem extends SubsystemBase {
 
 			if(!hasZero) {
 				// If we don't have a reliable zero, ignore any logic based on encoders
-				raiser.set(power);
+				set(power);
 
 				return;
 			}
 
 			if(power > 0 && raiser.getEncoder().getPosition() >= MoPrefs.CLIMB_HEIGHT.get()) {
-				raiser.set(0);
+				set(0);
 				return;
 			}
 
 			if(power < 0 && raiser.getEncoder().getPosition() < 0) {
-				raiser.set(0);
+				set(0);
 				return;
 			}
 
-			raiser.set(power);
+			set(power);;
 		}
 
 		public void zero(double power) {
@@ -74,7 +86,7 @@ public class ClimberSubsystem extends SubsystemBase {
 		}
 
 		public void stop() {
-			raiser.set(0);
+			raiser.stopMotor();
 		}
 	}
 

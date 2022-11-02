@@ -37,8 +37,6 @@ public class MoPrefs {
 		"HoodDistanceTest", 18);
 	public static final Pref<Double> CLIMBER_RAISE_SETPOINT = doublePref(
 		"ClimbRaiseSetpoint", 1);
-	public static final Pref<Double> CLIMBER_ADJUST_SETPOINT = doublePref(
-		"ClimbAdjustSetpoint", 1);
 	public static final Pref<Double> CLIMB_HEIGHT = doublePref(
 		"ClimbHeight", 400);
 	public static final Pref<Double> CLIMB_ADJUST_MIN = doublePref(
@@ -73,6 +71,8 @@ public class MoPrefs {
 		"ClimberLimitCurrent", 80);
 	public static final Pref<Double> CLIMBER_LIMIT_TIME = doublePref(
 		"ClimberLimitTime", 0.25);
+	public static final Pref<Boolean> CLIMBER_USE_PID = booleanPref(
+		"ClimberUsePID", true);
 	// -----------------------------------------------------------
 
 	private MoPrefs() {
