@@ -66,7 +66,7 @@ public class RobotContainer {
 	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
 	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
-	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(pdp);
 
 	// Commands
 	private final Command shooterIdleCommand = new ShooterIdleCommand(shooterSubsystem);
