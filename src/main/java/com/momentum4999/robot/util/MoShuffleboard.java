@@ -64,7 +64,7 @@ public class MoShuffleboard {
 		directives.put("Left Has Zero",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
 						.withPosition(0, 2)));
-		directives.put("Right HasZero",
+		directives.put("Right Has Zero",
 				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
 						.withPosition(1, 2)));
 

@@ -26,12 +26,15 @@ public class RunClimberCommand extends CommandBase {
 		double leftTrigger = input.getAxis(InputAxis.LT);
 		double rightTrigger = input.getAxis(InputAxis.RT);
 
+
 		leftTrigger = Utils.clip(Utils.map(leftTrigger, CLIMBER_DEADZONE, 1, 0, 1), 0, 1);
 		rightTrigger = Utils.clip(Utils.map(rightTrigger, CLIMBER_DEADZONE, 1, 0, 1), 0, 1);
-
 		if(leftTrigger > 0) {
-			climber.leftClimber.raise(-input.getAxis(InputAxis.LY) * leftTrigger);
-			climber.rightClimber.raise(-input.getAxis(InputAxis.LY) * rightTrigger);
+			climber.leftClimber.raise(-input.getAxis(InputAxis.RY) * leftTrigger);
+		}
+
+		if(rightTrigger > 0) {
+			climber.rightClimber.raise(-input.getAxis(InputAxis.RY) * rightTrigger);
 		}
 	}
 

@@ -68,7 +68,7 @@ public class ClimberSubsystem extends SubsystemBase {
 				return;
 			}
 
-			set(power);;
+			set(power);
 		}
 
 		public void zero(double power) {
