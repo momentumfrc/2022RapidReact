@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class ZeroClimberCommand extends CommandBase {
-	private final static double ZEROING_POWER = 0.15;
+	private final static double ZEROING_POWER = 0.3;
 
 	private final ClimberSubsystem climber;
 

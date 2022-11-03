@@ -9,12 +9,16 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxLimitSwitch.Type;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ClimberSubsystem extends SubsystemBase {
 
 	private static final int CLIMBER_MAX_RPM = 4500;
+
+	private static final int CLIMBER_MIN_POS = 50;
 
 	public static class ClimberSide {
 		public final CANSparkMax raiser;
@@ -26,6 +30,10 @@ public class ClimberSubsystem extends SubsystemBase {
 			this.raiser = raiser;
 			this.raiserPid = raiser.getPIDController();
 			this.currentTrigger = currentTrigger;
+		}
+
+		public void invalidateZero() {
+			hasZero = false;
 		}
 
 		public boolean getHasZero() {
@@ -63,7 +71,7 @@ public class ClimberSubsystem extends SubsystemBase {
 				return;
 			}
 
-			if(power < 0 && raiser.getEncoder().getPosition() < 0) {
+			if(power < 0 && raiser.getEncoder().getPosition() <= CLIMBER_MIN_POS) {
 				set(0);
 				return;
 			}
@@ -93,23 +101,22 @@ public class ClimberSubsystem extends SubsystemBase {
 	public final ClimberSide leftClimber;
 	public final ClimberSide rightClimber;
 
-	private final PowerDistribution pdp;
-
-	public ClimberSubsystem(PowerDistribution pdp) {
+	public ClimberSubsystem() {
 		double currentLimit = MoPrefs.CLIMBER_LIMIT_CURRENT.get();
 		double currentCutoffTime = MoPrefs.CLIMBER_LIMIT_TIME.get();
 
+		var leftSparkMax = new CANSparkMax(Components.CLIMB_RAISE_L, CANSparkMaxLowLevel.MotorType.kBrushless);
+		var rightSparkMax = new CANSparkMax(Components.CLIMB_RAISE_R, CANSparkMaxLowLevel.MotorType.kBrushless);
+
 		leftClimber = new ClimberSide(
-			new CANSparkMax(Components.CLIMB_RAISE_L, CANSparkMaxLowLevel.MotorType.kBrushless),
-			OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_L_PDP)
+			leftSparkMax,
+			OvercurrentTrigger.makeForSparkMax(currentLimit, currentCutoffTime, leftSparkMax)
 		);
 
 		rightClimber = new ClimberSide(
-			new CANSparkMax(Components.CLIMB_RAISE_R, CANSparkMaxLowLevel.MotorType.kBrushless),
-			OvercurrentTrigger.makeForPdp(currentLimit, currentCutoffTime, pdp, Components.CLIMB_RAISE_R_PDP)
+			rightSparkMax,
+			OvercurrentTrigger.makeForSparkMax(currentLimit, currentCutoffTime, rightSparkMax)
 		);
-
-		this.pdp = pdp;
 
 		MoPrefs.CLIMBER_LIMIT_CURRENT.subscribe(current -> {
 			leftClimber.currentTrigger.setCurrentLimit(current);
@@ -120,6 +127,11 @@ public class ClimberSubsystem extends SubsystemBase {
 			leftClimber.currentTrigger.setCutoffTime(time);
 			rightClimber.currentTrigger.setCutoffTime(time);
 		});
+
+		Shuffleboard.getTab("MoDashboard").add("Invalidate Climber Zeros", new InstantCommand(() -> {
+			leftClimber.invalidateZero();
+			rightClimber.invalidateZero();
+		}));
 	}
 
 	@Override
@@ -133,7 +145,8 @@ public class ClimberSubsystem extends SubsystemBase {
 		MoShuffleboard.putNumber("Left Raiser", leftClimber.raiser.getEncoder().getPosition());
 		MoShuffleboard.putNumber("Right Raiser", rightClimber.raiser.getEncoder().getPosition());
 
-		MoShuffleboard.putNumber("Left Raiser Current", this.pdp.getCurrent(Components.CLIMB_RAISE_L_PDP));
+		SmartDashboard.putNumber("Left Raiser Current", this.leftClimber.raiser.getOutputCurrent());
+		SmartDashboard.putNumber("Right Raiser Current", this.leftClimber.raiser.getOutputCurrent());
 	}
 
 	public void stop() {
