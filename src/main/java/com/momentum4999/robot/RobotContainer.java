@@ -12,18 +12,13 @@ import com.momentum4999.robot.commands.ShooterActiveCommand;
 import com.momentum4999.robot.commands.ShooterIdleCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ZeroClimberCommand;
-import com.momentum4999.robot.input.MoBaseInput;
-import com.momentum4999.robot.input.MoMultiInput;
-import com.momentum4999.robot.input.InputMapping.InputButton;
-import com.momentum4999.robot.input.MoBaseInput.JoystickButtonHolder;
+import com.momentum4999.robot.input.MoInput;
+import com.momentum4999.robot.input.SingleControllerInput;
 import com.momentum4999.robot.subsystems.ClimberSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
-import com.momentum4999.robot.subsystems.IntakeSubsystem;
 import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.TargetingSubsystem;
-import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
-import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoShuffleboard;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
@@ -33,10 +28,9 @@ import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.Button;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -49,19 +43,15 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
  */
 public class RobotContainer {
 	// Components
-	public final MoBaseInput gamepad = createGamepad();
+	public final MoInput input = new SingleControllerInput(new LogitechF310(0));
 	public final PneumaticsControlModule pneumatics = new PneumaticsControlModule();
 	public final PowerDistribution pdp = new PowerDistribution();
 
 	// Joystick Buttons
-	private final JoystickButtonHolder intakeFwd = gamepad.getJoystickButton(InputButton.LB);
-	private final JoystickButtonHolder intakeRev = gamepad.getJoystickButton(InputButton.A);
-	private final JoystickButtonHolder shoot = gamepad.getJoystickButton(InputButton.RB);
-	private final JoystickButtonHolder shootNoTarget = gamepad.getJoystickButton(InputButton.B);
+	private final Button shoot = new Button(input::getRunShooter);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
-	public final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
 	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
 	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
@@ -71,12 +61,12 @@ public class RobotContainer {
 	private final Command shooterActiveNoTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false);
 	private final Command shooterActiveWithTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, true);
 
-	private final DriveCommand driveCommand = new DriveCommand(Mode.ARCADE, this.driveSubsystem, this.gamepad);
-	private final Command intakeCommand = new SequentialCommandGroup(
+	private final DriveCommand driveCommand = new DriveCommand(this.driveSubsystem, input);
+	private final Command climbCommand = new SequentialCommandGroup(
 		new ZeroClimberCommand(climberSubsystem, pdp),
-		new RunClimberCommand(climberSubsystem, this.gamepad)
+		new RunClimberCommand(climberSubsystem, input)
 	);
-	private final Command teleOpCommand = new ParallelCommandGroup(driveCommand, intakeCommand);
+	private final Command teleOpCommand = new ParallelCommandGroup(driveCommand, climbCommand);
 
 	private final Command autoCommand = new SequentialCommandGroup(
 		new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false).withTimeout(2.5),
@@ -109,21 +99,8 @@ public class RobotContainer {
 	 * Used to define button->command mappings.
 	 */
 	private void configureButtonBindings() {
-		// ---------------------------------- Intake ----------------------------------
-		this.intakeFwd.apply(button -> {
-			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
-				.whenHeld(new RunCommand(() -> this.runIntake(false), this.intakeSubsystem))
-				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
-		});
-		this.intakeRev.apply(button -> {
-			button.whenPressed(new InstantCommand(this::beginIntake, this.intakeSubsystem))
-				.whenHeld(new RunCommand(() -> this.runIntake(true), this.intakeSubsystem))
-				.whenReleased(new RunCommand(this::endIntake, this.intakeSubsystem));
-		});
-
 		// ---------------------------------- Shooter ---------------------------------
-		this.shoot.apply(button -> button.whenHeld(shooterActiveWithTargetingCommand));
-		this.shootNoTarget.apply(button -> button.whenHeld(shooterActiveNoTargetingCommand));
+		this.shoot.whenHeld(shooterActiveNoTargetingCommand);
 	}
 
 	/**
@@ -154,33 +131,5 @@ public class RobotContainer {
 
 	public void stopSubsystems() {
 		this.driveSubsystem.stop();
-	}
-
-	public static MoBaseInput createGamepad() {
-		return new MoMultiInput(
-			MoMultiInput.entry(new LogitechF310(Components.LOGITECH_F310_PORT)),
-			MoMultiInput.entry(new LogitechF310(Components.LOGITECH_F310_PORT + 1))
-		);
-		//return new MoSingleGamepad(new LogitechF310(Components.LOGITECH_F310_PORT));
-	}
-
-	public void beginIntake() {
-		this.intakeSubsystem.setIntake(true);
-	}
-
-	public void endIntake() {
-		this.intakeSubsystem.setIntake(false);
-		this.intakeSubsystem.idleIntake();
-		this.shooterSubsystem.idleIndexer();
-		this.shooterSubsystem.idleShooter();
-	}
-
-	public void runIntake(boolean rev) {
-		this.shooterSubsystem.runIndexer(rev);
-		if (rev) {
-			this.shooterSubsystem.retractShooter();
-		}
-
-		this.intakeSubsystem.runIntake(rev);
 	}
 }

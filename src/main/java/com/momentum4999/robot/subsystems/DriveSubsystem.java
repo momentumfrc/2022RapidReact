@@ -2,8 +2,6 @@ package com.momentum4999.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.momentum4999.robot.RobotConfig;
-import com.momentum4999.robot.input.MoBaseInput;
-import com.momentum4999.robot.input.InputMapping.InputAxis;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoShuffleboard;
 
@@ -17,7 +15,6 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -47,8 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
 		// TODO: PID
 	}
 
-	public void drive(Mode mode, MoBaseInput input) {
-		mode.drive(this.driveTrain, input);
+	public void arcadeDrive(double move_request, double turn_request) {
+		this.driveTrain.arcadeDrive(move_request, turn_request);
 	}
 
 	public void driveDirect(double left, double right) {
@@ -75,28 +72,5 @@ public class DriveSubsystem extends SubsystemBase {
 
 	public Pose2d getPose() {
 		return this.odometry.getPoseMeters();
-	}
-
-	public enum Mode {
-		TANK {
-			@Override protected void drive(DifferentialDrive driveTrain, MoBaseInput input) {
-				driveTrain.tankDrive(
-					-input.getAxis(InputAxis.LY), -input.getAxis(InputAxis.RY));
-			}
-		}, 
-		ARCADE {
-			@Override protected void drive(DifferentialDrive driveTrain, MoBaseInput input) {
-				driveTrain.arcadeDrive(
-					-input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX));
-			}
-		}, 
-		CURVE {
-			@Override protected void drive(DifferentialDrive driveTrain, MoBaseInput input) {
-				driveTrain.curvatureDrive(
-					-input.getAxis(InputAxis.LY), input.getAxis(InputAxis.RX), false);
-			}
-		};
-
-		protected abstract void drive(DifferentialDrive driveTrain, MoBaseInput input);
 	}
 }

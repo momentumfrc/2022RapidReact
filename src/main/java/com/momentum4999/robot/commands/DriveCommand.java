@@ -1,20 +1,17 @@
 package com.momentum4999.robot.commands;
 
-import com.momentum4999.robot.input.MoBaseInput;
+import com.momentum4999.robot.input.MoInput;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
-import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class DriveCommand extends CommandBase {
 	private final DriveSubsystem drive;
-	private final MoBaseInput input;
-	private final Mode driveMode;
+	private final MoInput input;
 
-	public DriveCommand(Mode driveMode, DriveSubsystem drive, MoBaseInput input) {
+	public DriveCommand(DriveSubsystem drive, MoInput input) {
 		this.drive = drive;
 		this.input = input;
-		this.driveMode = driveMode;
 
 		addRequirements(drive);
 	}
@@ -24,7 +21,7 @@ public class DriveCommand extends CommandBase {
 
 	@Override
 	public void execute() {
-		this.drive.drive(this.driveMode, this.input);
+		this.drive.arcadeDrive(input.getMoveRequest(), input.getTurnRequest());
 	}
 
 	@Override
