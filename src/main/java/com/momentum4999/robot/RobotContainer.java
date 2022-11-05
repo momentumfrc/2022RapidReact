@@ -19,18 +19,24 @@ import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.TargetingSubsystem;
+import com.momentum4999.robot.triggers.UndervoltageTrigger;
 import com.momentum4999.robot.util.MoShuffleboard;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
+import org.usfirst.frc.team4999.lights.Color;
+import org.usfirst.frc.team4999.lights.animations.Animation;
+import org.usfirst.frc.team4999.lights.animations.Blink;
 
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -49,6 +55,9 @@ public class RobotContainer {
 
 	// Joystick Buttons
 	private final Button shoot = new Button(input::getRunShooter);
+
+	// Triggers
+	private final Trigger brownoutTrigger = new UndervoltageTrigger(pdp);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
@@ -78,6 +87,7 @@ public class RobotContainer {
 
 	// LEDS
 	public final LEDSubsystem leds = new LEDSubsystem();
+	private final Animation brownoutAnimation = new Blink(new Color[]{ Color.RED, Color.BLACK }, 250);
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -101,6 +111,10 @@ public class RobotContainer {
 	private void configureButtonBindings() {
 		// ---------------------------------- Shooter ---------------------------------
 		this.shoot.whenHeld(shooterActiveNoTargetingCommand);
+
+		this.brownoutTrigger.whenActive(new InstantCommand(() -> {
+			leds.setBaseAnimation(brownoutAnimation);
+		}));
 	}
 
 	/**
