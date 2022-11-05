@@ -1,3 +1,0 @@
-auto.mocod
-test.mocod
-no_op.mocod

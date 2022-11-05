@@ -6,7 +6,7 @@ package com.momentum4999.robot;
 
 import java.util.Map;
 
-import com.momentum4999.robot.commands.AutonomousCommand;
+import com.momentum4999.robot.commands.AutoDriveCommand;
 import com.momentum4999.robot.commands.RunClimberCommand;
 import com.momentum4999.robot.commands.ShooterActiveCommand;
 import com.momentum4999.robot.commands.ShooterIdleCommand;
@@ -24,9 +24,7 @@ import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.subsystems.TargetingSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem.Mode;
 import com.momentum4999.robot.util.Components;
-import com.momentum4999.robot.util.MoCode;
 import com.momentum4999.robot.util.MoShuffleboard;
-import com.momentum4999.robot.widgets.AutoScriptChooser;
 
 import org.usfirst.frc.team4999.controllers.LogitechF310;
 
@@ -79,11 +77,14 @@ public class RobotContainer {
 		new RunClimberCommand(climberSubsystem, this.gamepad)
 	);
 	private final Command teleOpCommand = new ParallelCommandGroup(driveCommand, intakeCommand);
-	private final AutonomousCommand autoCommand = new AutonomousCommand(this);
+
+	private final Command autoCommand = new SequentialCommandGroup(
+		new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false).withTimeout(2.5),
+		new AutoDriveCommand(driveSubsystem, 0.7, 0.7, 2)
+	);
 
 	// Shuffleboard
 	public final MoShuffleboard shuffleboard = new MoShuffleboard();
-	public final AutoScriptChooser autoScriptChooser;
 
 	// LEDS
 	public final LEDSubsystem leds = new LEDSubsystem();
@@ -92,12 +93,9 @@ public class RobotContainer {
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
 	 */
 	public RobotContainer() {
-		MoCode.INSTANCE.loadScripts(this);
-
 		configureDefaultCommands();
 		configureButtonBindings();
 
-		this.autoScriptChooser = new AutoScriptChooser(this); // Auto scripts need to be loaded before this is initialized
 		MoShuffleboard.matchTab()
 			.add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
 			.withSize(3, 3).withProperties(Map.of("Show controls", false));
