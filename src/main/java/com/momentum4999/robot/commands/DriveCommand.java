@@ -3,9 +3,9 @@ package com.momentum4999.robot.commands;
 import com.momentum4999.robot.input.MoInput;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class DriveCommand extends CommandBase {
+public class DriveCommand extends Command {
 	private final DriveSubsystem drive;
 	private final MoInput input;
 

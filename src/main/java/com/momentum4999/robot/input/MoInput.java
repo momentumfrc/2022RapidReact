@@ -5,7 +5,4 @@ public interface MoInput {
 	public double getTurnRequest();
 
 	public boolean getRunShooter();
-
-	public double getElevatorLeft();
-	public double getElevatorRight();
 }

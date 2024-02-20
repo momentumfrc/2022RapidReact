@@ -2,9 +2,9 @@ package com.momentum4999.robot.commands;
 
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class AutoDriveCommand extends CommandBase {
+public class AutoDriveCommand extends Command {
 	private final DriveSubsystem drive;
 	private final double power_left;
 	private final double power_right;

@@ -2,9 +2,9 @@ package com.momentum4999.robot.commands;
 
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class ShooterIdleCommand extends CommandBase {
+public class ShooterIdleCommand extends Command {
 	private final ShooterSubsystem shooter;
 
 	private static final double SHOOTER_CLOSED_POS = 0.7;

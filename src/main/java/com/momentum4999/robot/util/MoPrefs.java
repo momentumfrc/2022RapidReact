@@ -1,56 +1,24 @@
 package com.momentum4999.robot.util;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.EnumSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.StringPublisher;
 
 public class MoPrefs {
-	private static MoPrefs instance = null;
-
-	private static final String tableKey = "Preferences";
-	private static final Set<Runnable> initListeners = new HashSet<>();
-	private final NetworkTable table;
-
-	// Number preferences are defined like so:
-	// public static final Pref<Double> EX_NUMBER = doublePref("Example", <default value>);
-
-	// Text preferences are defined like so:
-	// public static final Pref<String> EX_TEXT = doublePref("Example", "default value");
-
-	// ----------------- Define Preferences Here -----------------
-	public static final Pref<Double> INTAKE_ROLLER_SETPOINT = doublePref(
-		"IntakeRollerSetpoint", 1);
 	public static final Pref<Double> INDEXER_SETPOINT = doublePref(
 		"IndexerSetpoint", 1);
 	public static final Pref<Double> SHOOTER_SETPOINT = doublePref(
 		"ShooterSetpoint", 4200);
-	public static final Pref<Double> HOOD_SETPOINT = doublePref(
-		"HoodSetpoint", 0.85);
 	public static final Pref<Double> HOOD_DISTANCE_TEST = doublePref(
 		"HoodDistanceTest", 18);
-	public static final Pref<Double> CLIMBER_RAISE_SETPOINT = doublePref(
-		"ClimbRaiseSetpoint", 1);
-	public static final Pref<Double> CLIMB_HEIGHT = doublePref(
-		"ClimbHeight", 400);
-	public static final Pref<Double> CLIMB_ADJUST_MIN = doublePref(
-		"ClimbAdjustMin", -20);
-	public static final Pref<Double> CLIMB_ADJUST_MAX = doublePref(
-		"ClimbAdjustMax", 120);
-	public static final Pref<Double> CLIMB_ADJUST_LIM = doublePref(
-		"ClimbAdjustLim", 75);
-	public static final Pref<Double> TARGETING_MIN_PWR = doublePref(
-		"TargetingMinPower", 0.4);
-	public static final Pref<Double> TARGETING_FALLOFF = doublePref(
-		"TargetingFalloff", 1);
-	public static final Pref<Double> TARGETING_ANGLE_ERROR = doublePref(
-		"TargetingAngleError", 8.5);
 	public static final Pref<Double> SHOOTER_TARGET_ERROR = doublePref(
 		"ShooterTargetError", 200);
 	public static final Pref<Double> SHOOTER_KP = doublePref(
@@ -64,103 +32,75 @@ public class MoPrefs {
 
 	public static final Pref<Double> SHOOTER_KIZONE = doublePref(
 		"ShooterIZone", 0.1);
-
-	public static final Pref<Boolean> CLIMBER_USE_LIMIT_SWITCHES = booleanPref(
-		"ClimberUseLimitSwitches", false);
-	public static final Pref<Double> CLIMBER_LIMIT_CURRENT = doublePref(
-		"ClimberLimitCurrent", 80);
-	public static final Pref<Double> CLIMBER_LIMIT_TIME = doublePref(
-		"ClimberLimitTime", 0.25);
-	public static final Pref<Boolean> CLIMBER_USE_PID = booleanPref(
-		"ClimberUsePID", true);
 	// -----------------------------------------------------------
 
-	private MoPrefs() {
-		this.table = NetworkTableInstance.getDefault().getTable(tableKey);
-		this.table.getEntry(".type").setString("RobotPreferences");
-		this.table.addEntryListener((table, key, entry, value, flags) -> entry.setPersistent(),
-			EntryListenerFlags.kImmediate | EntryListenerFlags.kNew);
-	}
-
-	public boolean hasKey(String key) {
-		return this.table.containsKey(key);
-	}
-
-	public NetworkTableEntry getEntry(String key) {
-		return this.table.getEntry(key);
-	}
-
-	public static MoPrefs get() {
-		if (instance == null) {
-			throw new RuntimeException("Tried to access MoPrefs too early!");
-		}
-
-		return instance;
-	}
-
-	public static void init() {
-		if (instance != null) {
-			throw new RuntimeException("Tried to initialize MoPrefs twice!");
-		}
-
-		instance = new MoPrefs();
-
-		initListeners.forEach(Runnable::run);
-	}
-
-	public static final class Pref<T> {
+	public final class Pref<T> {
 		public final String key;
-		private final T defaultValue;
+		private Function<NetworkTableValue, T> getter;
+		private BiFunction<NetworkTableEntry, T, Boolean> setter;
 
-		// A function that gets this pref's value from a NetworkTableEntry
-		private final BiFunction<NetworkTableEntry, T, T> getter;
-		// A function that sets this pref's value within a NetworkTableEntry
-		private final BiConsumer<NetworkTableEntry, T> setter;
+		private final NetworkTableEntry entry;
 
-		public Pref(String key, T defaultValue,
-					BiFunction<NetworkTableEntry, T, T> getter, BiConsumer<NetworkTableEntry, T> setter) {
+		private Consumer<T> subscriber = null;
+
+		public Pref(String key, T defaultValue, Function<NetworkTableValue, T> getter, BiFunction<NetworkTableEntry, T, Boolean> setter) {
 			this.key = key;
-			this.defaultValue = defaultValue;
 			this.getter = getter;
 			this.setter = setter;
 
-			initListeners.add(this::init);
-		}
-
-		private void init() {
-			MoPrefs prefs = MoPrefs.get();
-			if(!prefs.hasKey(key)) {
-				this.set(defaultValue);
-			}
+			this.entry = table.getEntry(key);
+			this.entry.setDefaultValue(defaultValue);
+			this.entry.setPersistent();
 		}
 
 		public T get() {
-			MoPrefs prefs = MoPrefs.get();
-			return this.getter.apply(prefs.getEntry(this.key), this.defaultValue);
+			return getter.apply(entry.getValue());
 		}
 
 		public void set(T value) {
-			MoPrefs prefs = MoPrefs.get();
-			this.setter.accept(prefs.getEntry(this.key), value);
+			setter.apply(entry, value);
 		}
 
-		public int subscribe(Consumer<T> consumer) {
-			MoPrefs prefs = MoPrefs.get();
-			NetworkTableEntry entry = prefs.getEntry(this.key);
-			return entry.addListener(notification -> consumer.accept((T) notification.value.getValue()),
-				EntryListenerFlags.kImmediate | EntryListenerFlags.kLocal | EntryListenerFlags.kUpdate);
+		public void subscribe(Consumer<T> consumer) {
+			subscribe(consumer, false);
+		}
+
+		public void subscribe(Consumer<T> consumer, boolean notifyImmediately) {
+			if(subscriber != null) {
+				subscriber = subscriber.andThen(consumer);
+			} else {
+				subscriber = consumer;
+				entry.getInstance().addListener(
+					entry,
+					EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+					(e) -> consumer.accept(getter.apply(e.valueData.value))
+				);
+			}
+
+			if(notifyImmediately) {
+				consumer.accept(this.get());
+			}
 		}
 	}
 
-	private static Pref<String> stringPref(String key, String defaultVal) {
-		return new Pref<>(key, defaultVal, NetworkTableEntry::getString, NetworkTableEntry::setString);
+	private static MoPrefs instance;
+	private NetworkTable table;
+	private StringPublisher typePublisher;
+
+	private static MoPrefs getInstance() {
+		if(instance == null) {
+			instance = new MoPrefs();
+		}
+		return instance;
 	}
 
-	private static Pref<Double> doublePref(String key, double defaultVal) {
-		return new Pref<>(key, defaultVal, NetworkTableEntry::getDouble, NetworkTableEntry::setDouble);
+	private MoPrefs() {
+		table = NetworkTableInstance.getDefault().getTable("Preferences");
+		typePublisher = table.getStringTopic(".type").publish();
+		typePublisher.set("RobotPreferences");
 	}
 
-	private static Pref<Boolean> booleanPref(String key, boolean defaultVal) {
-		return new Pref<>(key, defaultVal, NetworkTableEntry::getBoolean, NetworkTableEntry::setBoolean);
+	private static Pref<Double> doublePref(String key, double defaultValue) {
+		return getInstance().new Pref<>(key, defaultValue, NetworkTableValue::getDouble, NetworkTableEntry::setDouble);
 	}
 }

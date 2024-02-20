@@ -7,35 +7,22 @@ package com.momentum4999.robot;
 import java.util.Map;
 
 import com.momentum4999.robot.commands.AutoDriveCommand;
-import com.momentum4999.robot.commands.RunClimberCommand;
 import com.momentum4999.robot.commands.ShooterActiveCommand;
 import com.momentum4999.robot.commands.ShooterIdleCommand;
 import com.momentum4999.robot.commands.DriveCommand;
-import com.momentum4999.robot.commands.ZeroClimberCommand;
 import com.momentum4999.robot.input.MoInput;
 import com.momentum4999.robot.input.SingleControllerInput;
-import com.momentum4999.robot.subsystems.ClimberSubsystem;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
 import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
-import com.momentum4999.robot.subsystems.TargetingSubsystem;
-import com.momentum4999.robot.triggers.UndervoltageTrigger;
 import com.momentum4999.robot.util.MoShuffleboard;
 
-import org.usfirst.frc.team4999.controllers.LogitechF310;
-import org.usfirst.frc.team4999.lights.Color;
-import org.usfirst.frc.team4999.lights.animations.Animation;
-import org.usfirst.frc.team4999.lights.animations.Blink;
 
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
-import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -49,36 +36,24 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
 	// Components
-	public final MoInput input = new SingleControllerInput(new LogitechF310(0));
-	public final PneumaticsControlModule pneumatics = new PneumaticsControlModule();
-	public final PowerDistribution pdp = new PowerDistribution();
+	public final MoInput input = new SingleControllerInput(new XboxController(0));
 
 	// Joystick Buttons
-	private final Button shoot = new Button(input::getRunShooter);
-
-	// Triggers
-	private final Trigger brownoutTrigger = new UndervoltageTrigger(pdp);
+	private final Trigger shoot = new Trigger(input::getRunShooter);
 
 	// Subsystems
 	public final DriveSubsystem driveSubsystem = new DriveSubsystem();
-	public final TargetingSubsystem targetingSubsystem = new TargetingSubsystem(driveSubsystem);
-	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(targetingSubsystem);
-	public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+	public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
 	// Commands
 	private final Command shooterIdleCommand = new ShooterIdleCommand(shooterSubsystem);
-	private final Command shooterActiveNoTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false);
-	private final Command shooterActiveWithTargetingCommand = new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, true);
+	private final Command shooterActiveNoTargetingCommand = new ShooterActiveCommand(shooterSubsystem);
 
 	private final DriveCommand driveCommand = new DriveCommand(this.driveSubsystem, input);
-	private final Command climbCommand = new SequentialCommandGroup(
-		new ZeroClimberCommand(climberSubsystem, pdp),
-		new RunClimberCommand(climberSubsystem, input)
-	);
-	private final Command teleOpCommand = new ParallelCommandGroup(driveCommand, climbCommand);
+	private final Command teleOpCommand = driveCommand;
 
 	private final Command autoCommand = new SequentialCommandGroup(
-		new ShooterActiveCommand(shooterSubsystem, targetingSubsystem, false).withTimeout(2.5),
+		new ShooterActiveCommand(shooterSubsystem).withTimeout(2.5),
 		new AutoDriveCommand(driveSubsystem, 0.7, 0.7, 2)
 	);
 
@@ -87,7 +62,6 @@ public class RobotContainer {
 
 	// LEDS
 	public final LEDSubsystem leds = new LEDSubsystem();
-	private final Animation brownoutAnimation = new Blink(new Color[]{ Color.RED, Color.BLACK }, 250);
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -110,11 +84,7 @@ public class RobotContainer {
 	 */
 	private void configureButtonBindings() {
 		// ---------------------------------- Shooter ---------------------------------
-		this.shoot.whenHeld(shooterActiveNoTargetingCommand);
-
-		this.brownoutTrigger.whenActive(new InstantCommand(() -> {
-			leds.setBaseAnimation(brownoutAnimation);
-		}));
+		this.shoot.whileTrue(shooterActiveNoTargetingCommand);
 	}
 
 	/**
@@ -130,18 +100,9 @@ public class RobotContainer {
 		return this.teleOpCommand;
 	}
 
-	public void teleopInit() {
-		if (!this.targetingSubsystem.hasFirstInit()) {
-			this.targetingSubsystem.resetTargetPose();
-		}
-	}
+	public void teleopInit() {}
 
-	public void robotPeriodic() {
-		/*
-		for (int i = 0; i < this.pdp.getNumChannels(); i++) {
-			MoShuffleboard.putNumber("PDP Channel "+i, this.pdp.getCurrent(i));
-		}*/
-	}
+	public void robotPeriodic() {}
 
 	public void stopSubsystems() {
 		this.driveSubsystem.stop();

@@ -3,45 +3,30 @@ package com.momentum4999.robot.subsystems;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
 import com.momentum4999.robot.util.MoShuffleboard;
-import com.momentum4999.robot.util.MoUtil;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import org.usfirst.frc.team4999.utils.Utils;
-
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.smartdashboard.*;
 
 public class ShooterSubsystem extends SubsystemBase {
-	private final CANSparkMax indexer = new CANSparkMax(Components.INDEXER, CANSparkMaxLowLevel.MotorType.kBrushless);
-	private final CANSparkMax shooterA = new CANSparkMax(Components.SHOOTER_A, CANSparkMaxLowLevel.MotorType.kBrushless);
-	private final CANSparkMax shooterB = new CANSparkMax(Components.SHOOTER_B, CANSparkMaxLowLevel.MotorType.kBrushless);
-	public final CANSparkMax hood = new CANSparkMax(Components.HOOD, CANSparkMaxLowLevel.MotorType.kBrushless);
+	private final CANSparkMax indexer = new CANSparkMax(Components.INDEXER, MotorType.kBrushless);
+	private final CANSparkMax shooterA = new CANSparkMax(Components.SHOOTER_A, MotorType.kBrushless);
+	private final CANSparkMax shooterB = new CANSparkMax(Components.SHOOTER_B, MotorType.kBrushless);
+	public final CANSparkMax hood = new CANSparkMax(Components.HOOD, MotorType.kBrushless);
 
 	private final RelativeEncoder shooterAEncoder = shooterA.getEncoder();
 	private final RelativeEncoder shooterBEncoder = shooterB.getEncoder();
-	private final SparkMaxPIDController shootAPidController = shooterA.getPIDController();
+	private final SparkPIDController shootAPidController = shooterA.getPIDController();
 
-	private final DigitalInput fullSensor = new DigitalInput(Components.SHOOTER_FULL_SENSOR);
+	private ShootStep currentShootStep = ShootStep.OPEN_HOOD;
 
-	private final TargetingSubsystem targeting;
-
-	private State shooterState = State.DEFAULT;
-
-	public ShooterSubsystem(TargetingSubsystem targeting) {
-		this.targeting = targeting;
-
+	public ShooterSubsystem() {
 		this.indexer.setInverted(true);
 		this.shooterB.setInverted(true);
 		this.shooterB.follow(shooterA, true);
 		this.hood.setInverted(true);
-	}
-
-	public boolean fullOfBalls() {
-		return fullSensor.get();
 	}
 
 	public boolean shooterUpToSpeed() {
@@ -49,8 +34,8 @@ public class ShooterSubsystem extends SubsystemBase {
 		return this.shooterAEncoder.getVelocity() > min;
 	}
 
-	public boolean hoodFullyOpen(boolean calc) {
-		return this.hood.getEncoder().getPosition() >= this.calcHoodTarget(calc);
+	public boolean hoodFullyOpen() {
+		return this.hood.getEncoder().getPosition() >= this.calcHoodTarget();
 	}
 
 	public void runIndexer(boolean rev) {
@@ -69,66 +54,55 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shooterA.set(-0.2);
 	}
 
-	private double calcHoodTarget(boolean calc) {
+	private double calcHoodTarget() {
 		return MoPrefs.HOOD_DISTANCE_TEST.get();
-
-		//double x = this.targeting.getTargetDistance();
-		//return Utils.clip(calc ? -1.5 * Math.pow(x - 6, 2) + 37 : 2, 0, 50);
 	}
 
-	public void openHood(boolean calc) {
-		if (!this.hoodFullyOpen(calc)) {
-			//double range = this.calcHoodTarget(calc);
-			//double offset = Utils.clip(range - this.hood.getEncoder().getPosition(), 0, range);
-			//this.hood.set(Utils.clip(MoUtil.approachedPowerCalc(offset, range, 0.2, 1) * MoPrefs.HOOD_SETPOINT.get(), 0, 1));
+	public void openHood() {
+		if (!this.hoodFullyOpen()) {
 			this.hood.set(0.4);
 		} else {
 			this.hood.set(0);
 		}
 	}
 
-	public void runActive(boolean doTargeting) {
-		if (doTargeting) {
-			this.targeting.turnToTarget();
+	public void runActive() {
+		if(currentShootStep == ShootStep.OPEN_HOOD) {
+			if(this.hoodFullyOpen()) {
+				currentShootStep = ShootStep.RAMP_UP;
+			}
+		} else if(currentShootStep == ShootStep.RAMP_UP) {
+			if(this.shooterUpToSpeed()) {
+				currentShootStep = ShootStep.SHOOT;
+			}
+		} else if(currentShootStep == ShootStep.SHOOT) {
+			if(!this.shooterUpToSpeed() || !this.hoodFullyOpen()) {
+				currentShootStep = ShootStep.OPEN_HOOD;
+			}
+		} else {
+			throw new IllegalStateException("Unknown shooterState " + currentShootStep.name());
 		}
 
-		this.openHood(doTargeting);
-
-		boolean overrideBallSensor = true;
-
-		if (shooterState == State.DEFAULT) {
-			this.shooterState = State.LOADING;
-		} else if (shooterState == State.LOADING) {
-			if (overrideBallSensor || this.fullOfBalls()) {
-				this.shooterState = State.RETRACTING;
-			} else this.runIndexer(false);
-		} else if (shooterState == State.RETRACTING) {
-			if (!overrideBallSensor && this.fullOfBalls()) {
-				// Retract ball lower into the bot so we can get the shooter
-				// up to speed unloaded
-				this.retractShooter();
-				this.runIndexer(true);
-			} else if (this.hoodFullyOpen(doTargeting)) {
-				this.shooterState = State.SHOOTING;
-			} else {
-				this.idleIndexer();
-			}
-		} else if (shooterState == State.SHOOTING) {
+		if(currentShootStep == ShootStep.OPEN_HOOD) {
+			this.openHood();
+			this.idleIndexer();
+			this.idleShooter();
+		} else if(currentShootStep == ShootStep.RAMP_UP) {
+			this.openHood();
+			this.idleIndexer();
 			this.runShooter();
-
-			if (this.shooterUpToSpeed() && (this.targeting.isAtTarget() || !doTargeting)) {
-				this.runIndexer(false);
-			} else this.idleIndexer();
-
-			if (!doTargeting) {
-				this.targeting.resetTargetPose();
-			}
+		} else if(currentShootStep == ShootStep.SHOOT) {
+			this.openHood();
+			this.runIndexer(false);
+			this.runShooter();
+		} else {
+			throw new IllegalStateException("Unknown shooterState " + currentShootStep.name());
 		}
 	}
 
 	public void stop() {
 		idle();
-		this.shooterState = State.DEFAULT;
+		this.currentShootStep = ShootStep.OPEN_HOOD;
 	}
 
 	public void idleShooter() {
@@ -146,8 +120,7 @@ public class ShooterSubsystem extends SubsystemBase {
 		MoShuffleboard.putNumber("Flywheel Motor A Velocity", shooterAEncoder.getVelocity());
 		MoShuffleboard.putNumber("Flywheel Motor B Velocity", shooterBEncoder.getVelocity());
 		MoShuffleboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
-		MoShuffleboard.putString("Shooter State", this.shooterState.name());
-		MoShuffleboard.putBoolean("Full of Ball", this.fullOfBalls());
+		MoShuffleboard.putString("Shooter State", this.currentShootStep.name());
 
 		// Shooter B is reversed and set to follow
 		this.shootAPidController.setP(MoPrefs.SHOOTER_KP.get());
@@ -158,15 +131,9 @@ public class ShooterSubsystem extends SubsystemBase {
 		this.shootAPidController.setDFilter(0);
 	}
 
-	public enum State {
-		DEFAULT, // Idle
-		LOADING, // Moves all balls up
-		RETRACTING, // Once at limit, retract until no longer at limit
-		SHOOTING; // Shoot
-
-		public State next() {
-			State[] values = values();
-			return values[(this.ordinal() + 1) % values.length];
-		}
+	public enum ShootStep {
+		OPEN_HOOD,
+		RAMP_UP,
+		SHOOT;
 	}
 }

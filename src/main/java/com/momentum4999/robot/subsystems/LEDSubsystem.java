@@ -1,23 +1,25 @@
 package com.momentum4999.robot.subsystems;
 
+import org.usfirst.frc.team4999.lights.AddressableLEDDisplay;
 import org.usfirst.frc.team4999.lights.AsyncAnimator;
 import org.usfirst.frc.team4999.lights.Color;
 import org.usfirst.frc.team4999.lights.ColorTools;
 import org.usfirst.frc.team4999.lights.Display;
-import org.usfirst.frc.team4999.lights.NeoPixels;
 import org.usfirst.frc.team4999.lights.animations.*;
 import org.usfirst.frc.team4999.lights.compositor.AnimationCompositor;
-import org.usfirst.frc.team4999.lights.compositor.FullScreenView;
 
-import edu.wpi.first.wpilibj.I2C.Port;
+import com.momentum4999.robot.util.Components;
+
+import edu.wpi.first.wpilibj.DriverStation;
 
 public class LEDSubsystem {
+	private static final int LED_LENGTH = 240;
+
 	private Display display;
 	private AsyncAnimator animator;
 	private AnimationCompositor compositor;
 
-	private static final String BASE_ANIMATION_KEY = "BASE_ANIMATION";
-	private static final int BASE_ANIMATION_PRIORITY = 0;
+	private AnimationCompositor.View baseView;
 
 	private static Color[] rainbowcolors = {
 		new Color(72, 21, 170),
@@ -38,48 +40,34 @@ public class LEDSubsystem {
 	Animation mainAnimation = new AnimationSequence(
 		new AnimationSequence.AnimationSequenceMember[] {
 			new AnimationSequence.AnimationSequenceMember(
-				new Snake(rainbowTails, 7),
+				new Snake(20, rainbowTails),
 				5000
 			),
 			new AnimationSequence.AnimationSequenceMember(
-				new Snake(ColorTools.getSmearedColors(rainbowcolors, 16), 5),
+				new Snake(15, ColorTools.getSmearedColors(rainbowcolors, 16)),
 				1500
 			),
 			new AnimationSequence.AnimationSequenceMember(
-				new Snake(momentumTails, 7),
+				new Snake(20, momentumTails),
 				5000
 			),
 			new AnimationSequence.AnimationSequenceMember(
-				new Stack(rainbowcolors, 20, 20),
+				new Stack(20, 60, rainbowcolors),
 				1500
 			)
 	});
 
 	public LEDSubsystem() {
-
 		try {
-			display = NeoPixels.getInstance(Port.kMXP);
+			display = new AddressableLEDDisplay(Components.LEDS, LED_LENGTH);
 			animator = new AsyncAnimator(display);
 			compositor = new AnimationCompositor(animator);
-
-			setBaseAnimation(mainAnimation);
 		} catch (Exception e) {
-			e.printStackTrace();
-			compositor = null;
-			if (animator != null) {
-				animator.stopAnimation();
-			}
-			animator = null;
-			display = null;
+			DriverStation.reportError("Error instantiating LEDSubsystem", e.getStackTrace());
+			return;
 		}
 
-	}
-
-	public void setBaseAnimation(Animation animation) {
-		if (compositor != null) {
-			compositor.hideView(BASE_ANIMATION_KEY);
-			compositor.showView(BASE_ANIMATION_KEY, new FullScreenView(animation), BASE_ANIMATION_PRIORITY);
-		}
+		baseView = compositor.getOpaqueView(mainAnimation);
 	}
 
 }

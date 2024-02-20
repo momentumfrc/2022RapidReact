@@ -1,19 +1,12 @@
 package com.momentum4999.robot.subsystems;
 
-import com.kauailabs.navx.frc.AHRS;
 import com.momentum4999.robot.RobotConfig;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoShuffleboard;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -25,13 +18,7 @@ public class DriveSubsystem extends SubsystemBase {
 	private final Encoder rightEncoder = new Encoder(
 		Components.ENC_RIGHT_A, Components.ENC_RIGHT_B, true);
 
-	private final Gyro gyro = new AHRS(SerialPort.Port.kMXP);
-
-	private final MotorControllerGroup leftDriveGroup = new MotorControllerGroup(left);
-	private final MotorControllerGroup rightDriveGroup = new MotorControllerGroup(right);
-
-	private final DifferentialDrive driveTrain = new DifferentialDrive(leftDriveGroup, rightDriveGroup);
-	private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(0));
+	private final DifferentialDrive driveTrain = new DifferentialDrive(left, right);
 
 	public DriveSubsystem() {
 		this.driveTrain.setDeadband(0);
@@ -58,19 +45,12 @@ public class DriveSubsystem extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		this.odometry.update(this.gyro.getRotation2d(), this.leftEncoder.getDistance(), this.rightEncoder.getDistance());
-
 		MoShuffleboard.putNumber("Average Distance", this.getAverageDrivenDistance());
 		MoShuffleboard.putNumber("Left Distance", this.leftEncoder.getDistance());
 		MoShuffleboard.putNumber("Right Distance", this.rightEncoder.getDistance());
-		MoShuffleboard.putNumber("Gyro Degrease", this.getPose().getRotation().getDegrees());
 	}
 
 	public double getAverageDrivenDistance() {
 		return (this.leftEncoder.getDistance() + this.rightEncoder.getDistance()) * 0.5;
-	}
-
-	public Pose2d getPose() {
-		return this.odometry.getPoseMeters();
 	}
 }

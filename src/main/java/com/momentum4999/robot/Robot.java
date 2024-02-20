@@ -4,8 +4,6 @@
 
 package com.momentum4999.robot;
 
-import com.momentum4999.robot.util.MoPrefs;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,7 +25,6 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void robotInit() {
-		MoPrefs.init();
 		CameraServer.startAutomaticCapture();
 
 		// Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -57,9 +54,7 @@ public class Robot extends TimedRobot {
 	public void disabledInit() {}
 
 	@Override
-	public void disabledPeriodic() {
-		this.robotContainer.targetingSubsystem.limelight.setLight(false);
-	}
+	public void disabledPeriodic() {}
 
 	/** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
 	@Override

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -39,35 +39,13 @@ public class MoShuffleboard {
 	}
 
 	private static HashMap<String, LayoutDirective> directives = new HashMap<>();
-	private static HashMap<String, NetworkTableEntry> entries = new HashMap<>();
+	private static HashMap<String, GenericEntry> entries = new HashMap<>();
 
 	public static ShuffleboardTab matchTab() {
 		return Shuffleboard.getTab("Match");
 	}
 
 	static {
-		// Climber
-		ShuffleboardLayout climberLayout = Shuffleboard.getTab("MoSystems").getLayout("Climber", BuiltInLayouts.kGrid)
-				.withSize(2, 5).withPosition(0, 0).withProperties(Map.of("Label position", "Top"));
-		directives.put("Left Raise Limit",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(0, 0)));
-		directives.put("Right Raise Limit",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(1, 0)));
-		directives.put("Left Raiser",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(0, 1)));
-		directives.put("Right Raiser",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kTextView)
-						.withPosition(1, 1)));
-		directives.put("Left Has Zero",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(0, 2)));
-		directives.put("Right Has Zero",
-				new LayoutDirective(climberLayout, (widget) -> widget.withWidget(BuiltInWidgets.kBooleanBox)
-						.withPosition(1, 2)));
-
 		// Drive
 		ShuffleboardLayout driveLayout = Shuffleboard.getTab("MoSystems").getLayout("Drive", BuiltInLayouts.kGrid)
 				.withSize(2, 2).withPosition(2, 0).withProperties(Map.of("Label Position", "Top"));
@@ -112,7 +90,7 @@ public class MoShuffleboard {
 			return;
 		}
 		if (!directives.containsKey(key)) {
-			NetworkTableEntry entry = Shuffleboard.getTab(DEFAULT_TAB).add(key, value).getEntry();
+			GenericEntry entry = Shuffleboard.getTab(DEFAULT_TAB).add(key, value).getEntry();
 			entries.put(key, entry);
 			return;
 		}
