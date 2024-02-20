@@ -25,5 +25,21 @@
       }
     },
   ],
-  "java.test.defaultConfig": "WPIlibUnitTests"
+  "java.test.defaultConfig": "WPIlibUnitTests",
+  "[java]": {
+    "spotlessGradle.format.enable": true,
+    "spotlessGradle.diagnostics.enable": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.spotlessGradle": "explicit"
+    }
+  },
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "java.saveActions.organizeImports": true,
+  "editor.rulers": [120],
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
 }
