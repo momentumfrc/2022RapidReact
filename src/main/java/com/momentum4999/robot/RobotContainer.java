@@ -11,6 +11,7 @@ import com.momentum4999.robot.commands.ShooterIdleCommand;
 import com.momentum4999.robot.input.MoInput;
 import com.momentum4999.robot.input.SingleControllerInput;
 import com.momentum4999.robot.subsystems.DriveSubsystem;
+import com.momentum4999.robot.subsystems.HornSubsystem;
 import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.util.MoShuffleboard;
@@ -18,6 +19,7 @@ import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Map;
@@ -37,10 +39,12 @@ public class RobotContainer {
 
     // Joystick Buttons
     private final Trigger shoot = new Trigger(input::getRunShooter);
+    private final Trigger honk = new Trigger(input::getHonkHorn);
 
     // Subsystems
     public final DriveSubsystem driveSubsystem = new DriveSubsystem();
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    public final HornSubsystem hornSubsystem = new HornSubsystem();
 
     // Commands
     private final Command shooterIdleCommand = new ShooterIdleCommand(shooterSubsystem);
@@ -74,6 +78,8 @@ public class RobotContainer {
 
     private void configureDefaultCommands() {
         shooterSubsystem.setDefaultCommand(shooterIdleCommand);
+
+        hornSubsystem.setDefaultCommand(new RunCommand(hornSubsystem::unhonk, hornSubsystem));
     }
 
     /**
@@ -82,6 +88,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         // ---------------------------------- Shooter ---------------------------------
         this.shoot.whileTrue(shooterActiveNoTargetingCommand);
+        honk.whileTrue(new RunCommand(hornSubsystem::honk, hornSubsystem));
     }
 
     /**

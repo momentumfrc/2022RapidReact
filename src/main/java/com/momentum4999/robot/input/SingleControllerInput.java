@@ -27,4 +27,9 @@ public class SingleControllerInput implements MoInput {
     public boolean getRunShooter() {
         return f310.getBButton();
     }
+
+    @Override
+    public boolean getHonkHorn() {
+        return f310.getAButton();
+    }
 }

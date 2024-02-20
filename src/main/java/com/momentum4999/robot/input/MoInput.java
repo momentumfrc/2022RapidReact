@@ -6,4 +6,6 @@ public interface MoInput {
     public double getTurnRequest();
 
     public boolean getRunShooter();
+
+    public boolean getHonkHorn();
 }
