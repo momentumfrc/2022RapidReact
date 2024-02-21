@@ -22,6 +22,9 @@ public class MoPrefs {
     public static final Pref<Double> SHOOTER_KFF = doublePref("ShooterkFF", 0.00002935);
 
     public static final Pref<Double> SHOOTER_KIZONE = doublePref("ShooterIZone", 0.1);
+
+    public static final Pref<Double> HORN_SPD = doublePref("Horn Speed", 1);
+    public static final Pref<Double> HORN_RAMP_TIME = doublePref("Horn Ramp", 0.5);
     // -----------------------------------------------------------
 
     public final class Pref<T> {
