@@ -1,7 +1,6 @@
 package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.util.MoPrefs;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
@@ -16,9 +15,11 @@ public class HornSubsystem extends SubsystemBase {
     private SlewRateLimiter limiter;
 
     public HornSubsystem() {
-        MoPrefs.HORN_RAMP_TIME.subscribe(ramp -> {
-            limiter = new SlewRateLimiter(1/ramp);
-        }, true);
+        MoPrefs.HORN_RAMP_TIME.subscribe(
+                ramp -> {
+                    limiter = new SlewRateLimiter(1 / ramp);
+                },
+                true);
     }
 
     private void set(double value) {
@@ -26,14 +27,14 @@ public class HornSubsystem extends SubsystemBase {
     }
 
     public void honk() {
-        //horn.set(Relay.Value.kOn);
+        // horn.set(Relay.Value.kOn);
 
         set(MoPrefs.HORN_SPD.get());
         horn.set(Value.kOn);
     }
 
     public void unhonk() {
-        //horn.set(Relay.Value.kOff);
+        // horn.set(Relay.Value.kOff);
         set(0);
         horn.set(Value.kOff);
     }

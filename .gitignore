@@ -169,7 +169,12 @@ out/
 .fleet
 
 # Simulation GUI and other tools window save file
+networktables.json
+networktables.json.bck
+simgui-ds.json
+simgui.json
 *-window.json
+pid_constants.ini*
 
 # Simulation data log directory
 logs/
@@ -177,9 +182,9 @@ logs/
 # Folder that has CTRE Phoenix Sim device config storage
 ctre_sim/
 
-# Simulation configuration files
-networktables.json
-networktables.json.bck
-simgui-ds.json
-simgui.json
-pid_constants.ini*
+# clangd
+/.cache
+compile_commands.json
+
+# Eclipse generated file for annotation processors
+.factorypath

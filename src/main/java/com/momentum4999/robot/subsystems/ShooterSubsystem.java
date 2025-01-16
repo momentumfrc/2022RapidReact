@@ -3,29 +3,90 @@ package com.momentum4999.robot.subsystems;
 import com.momentum4999.robot.util.Components;
 import com.momentum4999.robot.util.MoPrefs;
 import com.momentum4999.robot.util.MoShuffleboard;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final CANSparkMax indexer = new CANSparkMax(Components.INDEXER, MotorType.kBrushless);
-    private final CANSparkMax shooterA = new CANSparkMax(Components.SHOOTER_A, MotorType.kBrushless);
-    private final CANSparkMax shooterB = new CANSparkMax(Components.SHOOTER_B, MotorType.kBrushless);
-    public final CANSparkMax hood = new CANSparkMax(Components.HOOD, MotorType.kBrushless);
+    private final SparkMax indexer = new SparkMax(Components.INDEXER, MotorType.kBrushless);
+    private final SparkMax shooterA = new SparkMax(Components.SHOOTER_A, MotorType.kBrushless);
+    private final SparkMax shooterB = new SparkMax(Components.SHOOTER_B, MotorType.kBrushless);
+    public final SparkMax hood = new SparkMax(Components.HOOD, MotorType.kBrushless);
 
     private final RelativeEncoder shooterAEncoder = shooterA.getEncoder();
     private final RelativeEncoder shooterBEncoder = shooterB.getEncoder();
-    private final SparkPIDController shootAPidController = shooterA.getPIDController();
+    private final SparkClosedLoopController shootAPidController = shooterA.getClosedLoopController();
 
     private ShootStep currentShootStep = ShootStep.OPEN_HOOD;
 
     public ShooterSubsystem() {
-        this.indexer.setInverted(true);
-        this.shooterB.setInverted(true);
-        this.shooterB.follow(shooterA, true);
-        this.hood.setInverted(true);
+
+        var shooterAConfig = new SparkMaxConfig();
+        shooterAConfig.inverted(false);
+        shooterAConfig
+                .closedLoop
+                .p(MoPrefs.SHOOTER_KP.get())
+                .i(MoPrefs.SHOOTER_KI.get())
+                .d(MoPrefs.SHOOTER_KD.get())
+                .velocityFF(MoPrefs.SHOOTER_KFF.get())
+                .iZone(MoPrefs.SHOOTER_KIZONE.get())
+                .dFilter(0);
+        this.shooterA.configure(shooterAConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        this.indexer.configure(
+                new SparkMaxConfig().inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        this.shooterB.configure(
+                new SparkMaxConfig().inverted(true).follow(shooterA),
+                ResetMode.kResetSafeParameters,
+                PersistMode.kNoPersistParameters);
+        this.hood.configure(
+                new SparkMaxConfig().inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        MoPrefs.SHOOTER_KP.subscribe(
+                p -> {
+                    var config = new SparkMaxConfig();
+                    config.closedLoop.p(p, ClosedLoopSlot.kSlot0);
+                    this.shooterA.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                },
+                false);
+
+        MoPrefs.SHOOTER_KI.subscribe(
+                i -> {
+                    var config = new SparkMaxConfig();
+                    config.closedLoop.i(i, ClosedLoopSlot.kSlot0);
+                    this.shooterA.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                },
+                false);
+
+        MoPrefs.SHOOTER_KD.subscribe(
+                d -> {
+                    var config = new SparkMaxConfig();
+                    config.closedLoop.d(d, ClosedLoopSlot.kSlot0);
+                    this.shooterA.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                },
+                false);
+
+        MoPrefs.SHOOTER_KFF.subscribe(
+                ff -> {
+                    var config = new SparkMaxConfig();
+                    config.closedLoop.velocityFF(ff, ClosedLoopSlot.kSlot0);
+                    this.shooterA.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                },
+                false);
+
+        MoPrefs.SHOOTER_KIZONE.subscribe(
+                iZone -> {
+                    var config = new SparkMaxConfig();
+                    config.closedLoop.iZone(iZone, ClosedLoopSlot.kSlot0);
+                    this.shooterA.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                },
+                false);
     }
 
     public boolean shooterUpToSpeed() {
@@ -46,7 +107,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void runShooter() {
-        this.shootAPidController.setReference(MoPrefs.SHOOTER_SETPOINT.get(), CANSparkMax.ControlType.kVelocity, 0);
+        this.shootAPidController.setReference(
+                MoPrefs.SHOOTER_SETPOINT.get(), SparkMax.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
     }
 
     public void retractShooter() {
@@ -120,14 +182,6 @@ public class ShooterSubsystem extends SubsystemBase {
         MoShuffleboard.putNumber("Flywheel Motor B Velocity", shooterBEncoder.getVelocity());
         MoShuffleboard.putNumber("Current Hood Dist", this.hood.getEncoder().getPosition());
         MoShuffleboard.putString("Shooter State", this.currentShootStep.name());
-
-        // Shooter B is reversed and set to follow
-        this.shootAPidController.setP(MoPrefs.SHOOTER_KP.get());
-        this.shootAPidController.setI(MoPrefs.SHOOTER_KI.get());
-        this.shootAPidController.setD(MoPrefs.SHOOTER_KD.get());
-        this.shootAPidController.setFF(MoPrefs.SHOOTER_KFF.get());
-        this.shootAPidController.setIZone(MoPrefs.SHOOTER_KIZONE.get());
-        this.shootAPidController.setDFilter(0);
     }
 
     public enum ShootStep {

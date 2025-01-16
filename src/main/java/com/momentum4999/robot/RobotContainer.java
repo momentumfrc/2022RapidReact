@@ -4,7 +4,6 @@
 
 package com.momentum4999.robot;
 
-import com.momentum4999.robot.commands.AutoDriveCommand;
 import com.momentum4999.robot.commands.DriveCommand;
 import com.momentum4999.robot.commands.ShooterActiveCommand;
 import com.momentum4999.robot.commands.ShooterIdleCommand;
@@ -19,8 +18,8 @@ import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Map;
 
@@ -52,10 +51,6 @@ public class RobotContainer {
 
     private final DriveCommand driveCommand = new DriveCommand(this.driveSubsystem, input);
     private final Command teleOpCommand = driveCommand;
-
-    private final Command autoCommand = new SequentialCommandGroup(
-            new ShooterActiveCommand(shooterSubsystem).withTimeout(2.5),
-            new AutoDriveCommand(driveSubsystem, 0.7, 0.7, 2));
 
     // Shuffleboard
     public final MoShuffleboard shuffleboard = new MoShuffleboard();
@@ -97,7 +92,7 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return this.autoCommand;
+        return Commands.print("No auto here!");
     }
 
     public Command getRunningTeleopCommand() {
