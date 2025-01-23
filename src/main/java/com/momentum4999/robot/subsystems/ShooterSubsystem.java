@@ -42,7 +42,7 @@ public class ShooterSubsystem extends SubsystemBase {
         this.indexer.configure(
                 new SparkMaxConfig().inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
         this.shooterB.configure(
-                new SparkMaxConfig().inverted(true).follow(shooterA),
+                new SparkMaxConfig().follow(shooterA, true),
                 ResetMode.kResetSafeParameters,
                 PersistMode.kNoPersistParameters);
         this.hood.configure(
