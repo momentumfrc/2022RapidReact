@@ -11,6 +11,8 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -28,7 +30,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem() {
 
         var shooterAConfig = new SparkMaxConfig();
-        shooterAConfig.inverted(false);
+        shooterAConfig.inverted(false).idleMode(IdleMode.kBrake);
         shooterAConfig
                 .closedLoop
                 .p(MoPrefs.SHOOTER_KP.get())
@@ -40,13 +42,13 @@ public class ShooterSubsystem extends SubsystemBase {
         this.shooterA.configure(shooterAConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         this.indexer.configure(
-                new SparkMaxConfig().inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+                new SparkMaxConfig().inverted(true).idleMode(IdleMode.kCoast), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
         this.shooterB.configure(
-                new SparkMaxConfig().follow(shooterA, true),
+                new SparkMaxConfig().idleMode(IdleMode.kBrake).follow(shooterA, true),
                 ResetMode.kResetSafeParameters,
                 PersistMode.kNoPersistParameters);
         this.hood.configure(
-                new SparkMaxConfig().inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+                new SparkMaxConfig().inverted(true).idleMode(IdleMode.kBrake), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         MoPrefs.SHOOTER_KP.subscribe(
                 p -> {
