@@ -14,8 +14,6 @@ import com.momentum4999.robot.subsystems.HornSubsystem;
 import com.momentum4999.robot.subsystems.LEDSubsystem;
 import com.momentum4999.robot.subsystems.ShooterSubsystem;
 import com.momentum4999.robot.util.MoShuffleboard;
-import edu.wpi.first.cscore.HttpCamera;
-import edu.wpi.first.cscore.HttpCamera.HttpCameraKind;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -64,11 +62,6 @@ public class RobotContainer {
     public RobotContainer() {
         configureDefaultCommands();
         configureButtonBindings();
-
-        MoShuffleboard.matchTab()
-                .add("Limelight", new HttpCamera("Limelight", "http://10.49.99.11:5800/", HttpCameraKind.kMJPGStreamer))
-                .withSize(3, 3)
-                .withProperties(Map.of("Show controls", false));
     }
 
     private void configureDefaultCommands() {
