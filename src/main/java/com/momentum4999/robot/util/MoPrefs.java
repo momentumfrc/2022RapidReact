@@ -27,6 +27,10 @@ public class MoPrefs {
 
     public static final Pref<Double> HORN_SPD = doublePref("Horn Speed", 1);
     public static final Pref<Double> HORN_RAMP_TIME = doublePref("Horn Ramp", 0.5);
+
+    public static final Pref<Double> DRIVE_CURVE = doublePref("Drive Curve", 1.5);
+    public static final Pref<Double> DRIVE_THROTTLE = doublePref("Drive Throttle", 1);
+    public static final Pref<Double> DRIVE_DEADBAND = doublePref("Drive Deadband", 0.02);
     // -----------------------------------------------------------
 
     public final class Pref<T> {

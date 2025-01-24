@@ -1,6 +1,7 @@
 package com.momentum4999.robot.subsystems;
 
 import com.momentum4999.robot.util.Components;
+
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
@@ -16,10 +17,12 @@ public class DriveSubsystem extends SubsystemBase {
         this.driveTrain.setDeadband(0);
 
         this.right.setInverted(true);
+
+        this.driveTrain.setDeadband(0);
     }
 
     public void arcadeDrive(double move_request, double turn_request) {
-        this.driveTrain.arcadeDrive(move_request, turn_request);
+        this.driveTrain.arcadeDrive(move_request, turn_request, false);
     }
 
     public void driveDirect(double left, double right) {
