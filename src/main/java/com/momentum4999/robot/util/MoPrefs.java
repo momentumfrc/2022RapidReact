@@ -6,6 +6,8 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StringTopic;
+
 import java.util.EnumSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -93,8 +95,10 @@ public class MoPrefs {
 
     private MoPrefs() {
         table = NetworkTableInstance.getDefault().getTable("Preferences");
-        typePublisher = table.getStringTopic(".type").publish();
-        typePublisher.set("RobotPreferences");
+
+        String kSmartDashboardType = "RobotPreferences";
+        typePublisher = table.getStringTopic(".type").publishEx(StringTopic.kTypeString, "{\"SmartDashboard\":\"" + kSmartDashboardType + "\"}");
+        typePublisher.set(kSmartDashboardType);
     }
 
     private static Pref<Double> doublePref(String key, double defaultValue) {
