@@ -22,5 +22,8 @@ public class ShooterIdleCommand extends Command {
         } else {
             shooter.hood.set(0);
         }
+
+        shooter.idleShooter();
+        shooter.idleIndexer();
     }
 }
